@@ -24,10 +24,8 @@ AUX_ASMFLAGS := -g -O0
 FILES_C := $(shell find . -type f -iname '*.c')
 FILES_H := $(shell find . -type f -iname '*.h')
 
-# FILE_S_VMODE_ASM_SOURCE := video.s # the file included into uzeboxVideoEngineCore.s as VMODE_ASM_SOURCE
-# FILES_S := foo.s		   # any other assembly files to be linked in
-
-FILES_S := video.s foo.s
+FILE_S_VMODE_ASM_SOURCE := video.s # the file included into uzeboxVideoEngineCore.s as VMODE_ASM_SOURCE
+FILES_S := foo.s tiles.s	   # any other assembly files to be linked in
 
 # --------------------------------
 FILES_C := $(patsubst ./%,%,$(FILES_C))
@@ -82,7 +80,7 @@ FILES_KERNEL += uzeboxCore.c uzeboxSoundEngine.c uzeboxVideoEngine.c
 FILES_KERNEL := $(patsubst %,$(KERNEL)/%,$(FILES_KERNEL))
 
 # objects that must be built in order to link
-OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) # $(FILES_S)
+OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S)
 OBJECTS := $(patsubst %.c,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %.s,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(OBJECTS))
@@ -115,17 +113,17 @@ $(BUILD_DIR)/%.o: %.c $(FILES_H) $(FILES_S) | $(GEN_DIR)
 	@echo "CC $<"
 	@$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
-# We actually DON'T want to build our assembly files, they'll be included straight into the kernel
-# via VMODE_ASM_SOURCE (which is a weird way to do things, but ok)
-# 
-# $(BUILD_DIR)/%.o: %.s | $(GEN_DIR)
-# 	@echo "CC $<"
-# 	@$(CC) $(INCLUDES) $(ASMFLAGS) -c $< -o $@
-#
+# We actually DON'T want to build our main assembly file (VMODE_ASM_SOURCE), it'll be #include'd
+# straight into the kernel (which is a weird way to do things, but ok)
+
+$(BUILD_DIR)/%.o: %.s | $(GEN_DIR)
+	@echo "CC $<"
+	@$(CC) $(INCLUDES) $(ASMFLAGS) -c $< -o $@
+
 # This also means we should add kernel dependencies so the kernel gets rebuilt when we modify our
 # own code; VMODE_ASM_SOURCE gets #include'd from uzeboxVideoEngineCore.s
 
-$(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILES_S)
+$(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE)
 
 # TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
 # depending on them

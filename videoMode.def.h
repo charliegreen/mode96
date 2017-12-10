@@ -1,5 +1,8 @@
 #pragma once
 
+#include <avr/io.h>
+#include "defines.h"
+
 // #define VMODE_ASM_SOURCE "video.s"
 // #define VMODE_C_PROTOTYPES "video.h"
 #define VMODE_FUNC sub_video_mode96

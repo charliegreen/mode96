@@ -85,7 +85,7 @@ render_scanline:
 
 	;; WAIT	r19, 200
 
-	;; rcall	function
+	rcall	function
 	
 	rcall	_tile_scanline_start
 	
@@ -126,82 +126,6 @@ frame_end:
 	sts _SFR_MEM_ADDR(TIFR1),ZL
 	
 	ret			; returning from call to sub_video_mode96
-	
-
-_tile_bg:
-	out	VIDEO_PORT, r2
-	nop
-	nop
-	nop
-
-	out	VIDEO_PORT, r2
-	nop
-	nop
-	
-	out	VIDEO_PORT, r2
-	nop
-	nop
-	
-	out	VIDEO_PORT, r2
-	nop
-	nop
-	
-	out	VIDEO_PORT, r2
-	nop
-	nop
-	
-	out	VIDEO_PORT, r2
-	ret
-
-_tile_scanline_start:
- 	out	VIDEO_PORT, r5
-	nop
-	nop
-	nop
-	
-	out	VIDEO_PORT, r3
-	nop
-	nop
-
-	out	VIDEO_PORT, r4
-	nop
-	nop
-
-	out	VIDEO_PORT, r3
-	nop
-	nop
-	
-	out	VIDEO_PORT, r4
-	nop
-	nop
-
-	out	VIDEO_PORT, r3
-	ret
-
-_tile_scanline_end:
- 	out	VIDEO_PORT, r3
-	nop
-	nop
-	nop
-	
-	out	VIDEO_PORT, r4
-	nop
-	nop
-
-	out	VIDEO_PORT, r3
-	nop
-	nop
-
-	out	VIDEO_PORT, r4
-	nop
-	nop
-	
-	out	VIDEO_PORT, r3
-	nop
-	nop
-
-	out	VIDEO_PORT, r5
-	ret	
 
 VideoModeVsync:
 	;; TODO
