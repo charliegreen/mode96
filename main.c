@@ -9,6 +9,8 @@
 
 extern u8 vram[VRAM_SIZE];	// just for debugging
 
+extern void do_test_setup(void);
+
 // extern unsigned int test_get();
 // extern bool buffer_test(char*buffer, bool init);
 
@@ -40,6 +42,8 @@ int main() {
     // SetFontTilesIndex(0);
     ClearVram();
 
+    do_test_setup();
+    
     u8 line = 0;
     
     // unsigned int test = test_get();

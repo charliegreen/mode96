@@ -34,6 +34,62 @@ font_hi:	.space 1
 
 ;;; ================================================================================ core code
 	.section .text
+
+;;; -------------------------------------------------- data to initialize VRAM/palette with
+;;; (we can't just do this up there because .bss is zeroed)
+_test_vram:
+	;; simulated VRAM; starts as [text][color]
+	.byte	0		; char 0, color 0
+	.byte	0x01
+	.byte	0		; char 0, color 1
+	.byte	1		; char 1, color 0
+	.byte	0x01
+	.byte	1		; char 1, color 1
+	.space	VRAM_SIZE-6
+
+_test_m96_palette:
+	.byte	0xc0		; blue on grey
+	.byte	0x52
+
+	.byte	0x02		; red on green
+	.byte	0x10
+
+	.space	28
+
+;;; -------------------------------------------------- initialize VRAM/palette
+
+	.global do_test_setup
+;;; C-callable, should be called once before any video rendering
+do_test_setup:
+	;; ---------------------------------------- copy vram
+	ldi	ZL, lo8(_test_vram)
+	ldi	ZH, hi8(_test_vram)
+	ldi	XL, lo8(vram)
+	ldi	XH, hi8(vram)
+	ldi	r18, 20		; amount of data to copy into VRAM
+
+0:
+	lpm	r19, Z+
+	st	X+, r19
+	dec	r18
+	brne	0b
+
+	;; ---------------------------------------- copy palette
+	ldi	ZL, lo8(_test_m96_palette)
+	ldi	ZH, hi8(_test_m96_palette)
+	ldi	XL, lo8(m96_palette)
+	ldi	XH, hi8(m96_palette)
+	ldi	r18, 32
+
+0:
+	lpm	r19, Z+
+	st	X+, r19
+	dec	r18
+	brne	0b
+	
+	ret
+	
+;;; -------------------------------------------------- actual code
 	
 ;;; register allocation:
 ;;; r2: foreground color
@@ -42,14 +98,18 @@ font_hi:	.space 1
 	
 sub_video_mode96:
 	;; do setup
-	
+
 	WAIT	r19, 1347	; waste a scanline to align with next hsync
+	
 sub_video_mode96_entry:
+
+	lds	r8, TCNT1L
+
 	ldi	YL, lo8(vram)
 	ldi	YH, hi8(vram)
 
 	;; our tile test pattern: colors:
-	;; 2: grey:  0b01010010
+	;; 2: grey:  0b01010010: 0x52
 	;; 3: blue:  0b11000000: 0xc0
 	;; 4: green: 0b00010000: 0x10
 	;; 5: red:   0b00000010: 0x02
@@ -63,8 +123,6 @@ sub_video_mode96_entry:
 	ldi	r16, 0x02
 	mov	r5, r16
 
-	clr	r6
-
 	ldi	r21, FONT_TILE_SIZE
 	ldi	r23, FONT_TILE_WIDTH
 	
@@ -75,30 +133,31 @@ sub_video_mode96_entry:
 
 render_scanline:
 	;; generate hsync pulse
+	
+	;; At the `cbi` inside hsync_pulse (first instruction), TCNT1L (0x84) should be 0x68;
+	;; `rcall` and `lds` both take 2 cycles, so r8 should be 0x64 (I think..)
+	lds	r8, TCNT1L
 	rcall	hsync_pulse	;145
 
 	;; number of tiles to draw per scanline (r11 is our horizontal counter)
-	ldi	r16, 2		;37
+	;; ldi	r16, 43
+	ldi	r16, 44
 	mov	r11, r16
 	
 	WAIT	r19, HSYNC_USABLE_CYCLES - AUDIO_OUT_HSYNC_CYCLES + CENTER_ADJUSTMENT
+	WAIT	r19, 17		; adjustment for centering in uzem
 
-	;; WAIT	r19, 200
-
-	rcall	function
-	
 	rcall	_tile_scanline_start
 	
 0:
 	rcall	_tile_bg
-	
 	dec	r11
 	brne	0b
 
 	rcall	_tile_scanline_end
-	
-	;; out	VIDEO_PORT, r6	;output a 0
-	out	VIDEO_PORT, r2 	; output a background pixel so that we can distinguish between uzem background and our background
+
+	;; output a background pixel so that we can distinguish between uzem background and our background
+	out	VIDEO_PORT, r2
 
 	;; 1160 + 1 + 145 + 1 + 1 = 1408
 	;; 1820 - 1408 - 2 = 410

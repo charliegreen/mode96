@@ -41,26 +41,55 @@ call-used (ie potentially trashed by C calls): r18-r27, r30-r31
 call-saved: r2-r17, r28-r29
 
 # instructions
-## cycle count
+## I/O (to RAM or elsewhere)
+| name      | cycles | notes                                         |
+|-----------+--------+-----------------------------------------------|
+| out       |      1 |                                               |
+| in        | 2 or 3 | 2 for I/O space, 3 for RAM                    |
+| ld rN,X   |      2 |                                               |
+| ld rN,X+  |      2 |                                               |
+| ld rN,-X  |      3 |                                               |
+| ld rN,X+q |      3 | does not modify X, loads from offset          |
+| xch       |      2 | exchange reg with *Z in RAM, doesn't modify Z |
+| lds       |      3 |                                               |
+| push      |      1 |                                               |
+| pop       |      2 |                                               |
+| ldi       |      1 |                                               |
 
-| instruction |           cycle count |
-|-------------+-----------------------|
-| out         |                     1 |
-| ld          |                     3 |
-| mul         |                     2 |
-| add         |                     1 |
-| adc         |                     1 |
-| movw        |                     1 |
-| dec         |                     1 |
-| breq        | 1 if false, 2 if true |
-| ijmp        |                     2 |
-| lsl         |                     1 |
-| rcall       |                     2 |
-| call        |                     4 |
-| icall       |                     2 |
-| ret         |                     4 |
-| push        |                     1 |
-| pop         |                     2 |
-| rjmp        |                     2 |
-| jmp         |                     3 |
+## data
+| name | cycles | notes             |
+|------+--------+-------------------|
+| mul  |      2 | output in r1:r0   |
+| add  |      1 |                   |
+| adc  |      1 |                   |
+| movw |      1 |                   |
+| dec  |      1 |                   |
+| lsl  |      1 |                   |
+| swap |      1 |                   |
+| andi |      1 | r16-r31 only      |
+| adiw |      2 | immediate is 0-63 |
 
+## branching
+| name  |                cycles |
+|-------+-----------------------|
+| breq  | 1 if false, 2 if true |
+| ijmp  |                     2 |
+| rcall |                     2 |
+| call  |                     4 |
+| icall |                     2 |
+| ret   |                     4 |
+| rjmp  |                     2 |
+| jmp   |                     3 |
+
+# I/O space
+## addressing quirks
+I/O space registers, with I/O addresses from 0x00 to 0x3F, can be read with `in` and written to with
+`out`; they can also be modified directly with `ld`/`st` and variants at addresses in SRAM from 0x20
+to 0x5F (add 0x20 to the `in`/`out` I/O-space addresses to get SRAM addresses). Any I/O registers
+above this range must be accessed directly through SRAM with `ld`/`st` and variants. This also means
+that, for registers above this range, there is no need to add 0x20 to the given address.
+
+## specific registers
+### TCNT1
+
+This is a CPU cycle counter.

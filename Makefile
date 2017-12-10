@@ -178,6 +178,9 @@ size: $(TARGET)
 run: $(BUILD_DIR)/$(GAME).hex
 	uzem $(UZEM_RUN_OPTS) $<
 
+run-cuzebox: $(BUILD_DIR)/$(GAME).hex
+	cuzebox $<
+
 GEN_ASM_FLAGS := -fverbose-asm
 asm: $(patsubst %.c,%.s.GEN,$(FILES_C)) $(FILES_H) $(AUX_DEPS)
 %.s.GEN: %.c
@@ -190,7 +193,7 @@ asm: $(patsubst %.c,%.s.GEN,$(FILES_C)) $(FILES_H) $(AUX_DEPS)
 dump:	$(TARGET)
 	avr-objdump -S -l $< > $@
 
-debug:	$(TARGET) # $(TARGET:.elf=.map)
+debug:	$(TARGET) $(TARGET:.elf=.hex)
 	uzem -d $(TARGET:.elf=.hex) >/dev/null &
 	avr-gdb $(TARGET) -ex "target remote localhost:1284" \
 		-x init.gdb

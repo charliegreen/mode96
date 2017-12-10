@@ -61,37 +61,98 @@
 ;;; CUSTOM
 ;;; ================================================================================
 
-;;; We could have a similar chaining mechanism, where each tile jumps to the next. It may be better
-;;; to consolidate the color-loading code and jump to/from tile output code.
-
-;;; Since we're loading 12 bits, and can only load a byte at a time, there's no way to efficiently
-;;; interleave the data such that our code will be the same for each tile. We'll have to flip-flop
-;;; between two versions.
-
+;;; See [[NOTES.MD#code tile design]].
+	
 ;;; Register expectations:
-;;;   r23:r22: base address of color palette
+;;;   XH: hi8(m96_palette) (base address of color palette)
+;;; Register usage:
+;;;   r4: text index
+;;;   r5: FONT_TILE_SIZE
+;;;   r6: tile index (counter used to determine when we return)
+;;;   r17:r16: scratch
+;;;   r19:r18: foreground/background colors
+;;;   r20: color index
+;;;   r23:r22: address of tile table plus current tile row offset
+	
+	;; -------------------------------------------------- reading VRAM for [text][color|garbage]
+	ld	r4, Y+		; load text index
+	
+	ld	r20, Y+		; load color index
+	swap	r20
+	andi	r20, 0x0F
+	
+	;; -------------------------------------------------- reading VRAM for [garbage|color][text]
+	ld	r20, Y+		; load color index
+	andi	r20, 0x0F
 
+	ld	r4, Y+		; load text index
+
+	;; -------------------------------------------------- the above two sections interleaved
+
+	;; cycle count:
+	;; without skip (r6 even):
+	;;   sbrs:1
+	;;   rjmp:2
+	;;   ld, ld, swap: 5
+	;;   andi: 1
+	;;   ..total = 9
+	;; with skip:
+	;;   sbrs:2
+	;;   ld, ld: 4
+	;;   rjmp: 2
+	;;   andi: 1
+	;;   ..total = 9
+	
+	;; if r6 is even, we're on a [text][color]
+	sbrs	r6, 0		; skip next instruction if r6 is odd
+	rjmp	text_color
+color_text:
+	ld	r20, Y+
+	ld	r4, Y+
+	rjmp	end
+text_color:
+	ld	r4, Y+
+	ld	r20, Y+
+	swap	r20
+end:
+	andi	r20, 0x0F
+	
 	;; -------------------------------------------------- loading colors
-	;; [text][color|garbage] version
+	lsl	r20		; multiply by 2 to get index into color palette
 
-	;; -------------------------------------------------- loading colors
-	;; [garbage|color][text] version
-	ld	r16, Y+
-	andi	r16, 0x0F	; loaded color index into r16
+	;; we only have 32 bytes of colors, so the index will never affect XH
+	ldi	XL, lo8(m96_palette) ; X is now base address of color palette
+	add	XL, r20		     ; X is now address of our color pair
+	
+	ld	r19, X+		; load foreground color into r19
+	ld	r18, X		; load background color into r18
 
-	lsl	r16		; multiply by 2 to get index into color palette
-	add	r0, r22		; add to color palette address
-	add	r1, r23
+	;; ---- 7 cycles
+	
+	;; -------------------------------------------------- loading next code tile
+	mul	r4, r5
+	add	r0, r22
+	adc	r1, r23
 
-	movw	XL, r0
-	ld	r16, X+		; load foreground color into r16
-	ld	r17, X		; load background color into r17
+	movw	r30, r0		; copy r1:r0 into r31:r30 (Z)
 
+	;; we can shave off the above 5 cycles with a jump table (in program memory, so we use Z),
+	;; potentially saving cycles on text|color/color|text versions, but doubling tile PGMEM
+	;; consumption
+
+	;; if --r6 == 0, return; otherwise, jump to next tile
+	dec	r6
+	breq	.+2		; skip ijmp
+	ijmp
+	ret
+
+	;; ---- 9 cycles for ijmp, 12 cycles for ret
+	
 	;; -------------------------------------------------- outputting pixels
 
-	out	0x08, r16
-	out	0x08, r17
-	out	0x08, r16
-	out	0x08, r17
-	out	0x08, r16
-	out	0x08, r17
+	out	0x08, r18
+	out	0x08, r19
+	out	0x08, r18
+	out	0x08, r19
+	out	0x08, r18
+	out	0x08, r19

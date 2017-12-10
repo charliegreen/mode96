@@ -71,3 +71,16 @@ We could have a similar chaining mechanism, where each tile jumps to the next, b
 to consolidate the color-loading code and jump to/from tile output code? We obviously can't output
 any pixels until after we've loaded our colors, so the color-loading code can't be interleaved with
 the output code unless we're loading the next tile's color.
+
+Since we're loading 12 bits, and can only load a byte at a time from RAM, there's no way to
+efficiently interleave the data such that our code will be the same for each tile. We'll have to
+flip-flop between two versions. We can save cycles by having two different sets of code tiles, one
+for each version, but this will obviously double the program memory consumption of our tileset
+(which is pretty bad); it's probably better to have the flip-flop occur in code, at the cost of
+cycles.
+
+## cycle counts
+
+Something important to note: at 1820 cycles per scanline, then to get a 60-column 6x8 display, we
+need to have a maximum of 5.05 cycles/pixel on average (or 30.3 cycles/tile, when ignoring all the
+code around the tiles).
