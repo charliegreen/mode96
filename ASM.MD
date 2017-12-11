@@ -55,6 +55,7 @@ call-saved: r2-r17, r28-r29
 | push      |      1 |                                               |
 | pop       |      2 |                                               |
 | ldi       |      1 |                                               |
+| lpm       |      3 |                                               |
 
 ## data
 | name | cycles | notes             |
@@ -68,6 +69,7 @@ call-saved: r2-r17, r28-r29
 | swap |      1 |                   |
 | andi |      1 | r16-r31 only      |
 | adiw |      2 | immediate is 0-63 |
+| sbiw |      2 | immediate is 0-63 |
 
 ## branching
 | name  |                cycles |

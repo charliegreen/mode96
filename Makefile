@@ -151,6 +151,7 @@ $(TARGET): $(OBJECTS)
 %.eep: $(TARGET)
 	-avr-objcopy $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
 
+lss: $(TARGET:.elf=.lss)
 %.lss: $(TARGET)
 	avr-objdump -h -S $< > $@
 
@@ -159,7 +160,7 @@ uze: $(TARGET:.elf=.uze)
 	-packrom $< $@ $(INFO)
 
 # ================================ utility rules
-.PHONY: clean size run uze asm debug
+.PHONY: clean size run uze asm debug lss
 clean:
 	-$(RM) -rf $(BUILD_DIR)
 	-$(RM) -rf $(GEN_DIR)

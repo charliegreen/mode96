@@ -1,7 +1,7 @@
 # the goal
-To make a COLOR 80x24 (at minimum, possibly taller) text display. By "color", I mean 16 colors
-foreground/background (optimally), though allowances may have to be made reducing the number of
-colors.
+To make a COLOR 80x24 or 60x24 (at minimum, possibly taller) text display. By "color", I mean 16
+colors foreground/background (optimally), though allowances may have to be made reducing the number
+of colors.
 
 With mode 90, a separate tile would have to exist for each character/foreground/background combo,
 which is ridiculous (and results in 96 * 16 * 16 = 24576 tiles!). Mode 90 assumes arbitrary tiles,
@@ -11,9 +11,9 @@ A few assumptions:
 * I imagine we'll probably be using code tiles.
 * We want to preserve the full basic ASCII range of 96 printables, so characters must be at least 7
   bits. By choosing a case for our alphabet, this goes down to 6 bits, which saves us 1920 bits
-  total, or 240 B.
+  total, or 240 B (not enough to be worth it)
 
-# VRAM
+# VRAM memory usage
 VRAM is going to be the biggest memory hog. For reference, mode 9's submode 80 uses 80 * 28 = 2240
 bytes for VRAM. We want color though. 80 * 24 = 1920.
 
@@ -79,8 +79,65 @@ for each version, but this will obviously double the program memory consumption 
 (which is pretty bad); it's probably better to have the flip-flop occur in code, at the cost of
 cycles.
 
+## VRAM organization
+
+Method 1:
+
+	colors: [color][color][color][color]...
+	text: [text][text][text][text]....
+	
+Method 2:
+
+	[text][color][color][text][text][color][color][text]...
+
+Method 1 has the advantage that each code tile is mostly the same, but there's still going to be
+flip-flopping between two versions. Method 2 has the advantage that we only have to use one VRAM
+pointer, so we free up one of the pointer registers for loading color profiles.
+
+My method 1 VRAM-reading code:
+
+	;; r4: text index
+	;; r6: number of tiles left on this line to render
+	;; r20: color index
+	;; X: color VRAM pointer
+	;; Y: text VRAM pointer
+
+	ld	r20, X
+	sbrs	r6, 0
+	adiw	X, 1
+
+	sbrc	r6, 0		; skip next instruction if r6 is even
+	swap	r20
+	andi	r20, 0x0F
+
+	ld	r4, Y+
+
+My method 2 VRAM-reading code:
+
+		;; if r6 is even, we're on a [text][color]
+		sbrs	r6, 0		; skip next instruction if r6 is odd
+		rjmp	text_color
+	color_text:
+		ld	r20, Y+
+		ld	r4, Y+
+		rjmp	end
+	text_color:
+		ld	r4, Y+
+		ld	r20, Y
+		swap	r20
+	end:
+		andi	r20, 0x0F
+
+Both are 9 cycles along all code paths, but method 2 leaves X open for loading color profiles. I'm
+going to stick with method 2 for now.
+
 ## cycle counts
 
 Something important to note: at 1820 cycles per scanline, then to get a 60-column 6x8 display, we
 need to have a maximum of 5.05 cycles/pixel on average (or 30.3 cycles/tile, when ignoring all the
-code around the tiles).
+code around the tiles). This is obviously not realistic: we need to emit an HSYNC pulse somewhere,
+as well as update any audio information (if we want audio), not to mention actually deal with
+setting everything up for the code tiles.
+
+If we block out 160 cycles for the HSYNC and (arbitrarily) 220 more for miscellany (totalling 380),
+then we get 1440 cycles for code tiles. For a 60-wide screen, that gives us 24 cycles per code tile.

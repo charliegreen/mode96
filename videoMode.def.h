@@ -9,7 +9,7 @@
 
 #define HSYNC_USABLE_CYCLES 264	// maximum free cycles usable by the hsync and audio (from videoMode1)
 
-#define FONT_TILE_WIDTH  21   // size of a tile row in words (FONT_TILE_SIZE/8 for 6x8 tiles) (TODO)
+#define FONT_TILE_WIDTH  28   // size of a tile row in words (FONT_TILE_SIZE/8 for 6x8 tiles) (TODO)
 #define FONT_TILE_SIZE  (FONT_TILE_WIDTH*TILE_HEIGHT) // size of an entire tile in words
 
 #define TILE_HEIGHT 8
