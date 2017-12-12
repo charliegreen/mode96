@@ -24,9 +24,9 @@
 #define SCREEN_TILES_V VRAM_TILES_V
 
 #define VRAM_SIZE (VRAM_TILES_H*VRAM_TILES_V*12/8)
-#define VRAM_ADDR_SIZE 1	// in bytes
+// #define VRAM_ADDR_SIZE 1	// in bytes
 #define VRAM_PTR_TYPE u8
-#define SPRITES_ENABLED 0
+// #define SPRITES_ENABLED 0
 
 #ifndef FIRST_RENDER_LINE
 #define FIRST_RENDER_LINE 20

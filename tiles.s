@@ -14,11 +14,13 @@
 ;;; Expects:
 ;;;   Y: set to beginning of current row of VRAM
 ;;;   r25: tile row counter (0-7)
+;;;   r24: tile Y index
 begin_code_tile_row:
 	;; ---------------------------------------- initial register values
 	ldi	r16, FONT_TILE_SIZE
 	mov	r5, r16
 	ldi	r16, 8		; only go through this many tiles before returning
+	;; ldi	r16, 4
 	mov	r6, r16
 
 	.global begin_code_tile_row_bkpt
@@ -33,6 +35,17 @@ begin_code_tile_row_bkpt:
 	mul	r25, r16
 	add	r22, r0
 	adc	r23, r1
+
+	;; Set VRAM pointer to correct value
+
+	ldi	YL, lo8(vram)
+	ldi	YH, hi8(vram)
+	
+	;; ldi	r16, SCREEN_TILES_H*3/2
+	ldi	r16, 8*3/2
+	mul	r24, r16
+	add	YL, r0
+	adc	YH, r1
 	
 	ldi	XH, hi8(m96_palette)
 
@@ -144,37 +157,37 @@ code_tile_table_base:
 #undef F
 #undef _	
 	
-	.rept	FONT_TILE_WIDTH*256
-	nop
-	.endr
-error_tile:
-	;; a tile that will be rendered if we ever read the wrong tile index and jump too far
-	ldi	r16, 0x07	; BRIGHT RED
-	out	VIDEO_PORT, r16
+;; 	.rept	FONT_TILE_SIZE*0x30
+;; 	nop
+;; 	.endr
+;; error_tile:
+;; 	;; a tile that will be rendered if we ever read the wrong tile index and jump too far
+;; 	ldi	r16, 0x07	; BRIGHT RED
+;; 	out	VIDEO_PORT, r16
 	
-	ldi	r17, 0x38	; BRIGHT GREEN
-	nop
-	nop
+;; 	ldi	r17, 0x38	; BRIGHT GREEN
+;; 	nop
+;; 	nop
 
-	out	VIDEO_PORT, r17
-	nop
-	nop
-	nop
+;; 	out	VIDEO_PORT, r17
+;; 	nop
+;; 	nop
+;; 	nop
 
-	out	VIDEO_PORT, r16
-	nop
-	nop
-	nop
+;; 	out	VIDEO_PORT, r16
+;; 	nop
+;; 	nop
+;; 	nop
 
-	out	VIDEO_PORT, r17
-	nop
-	nop
-	nop
+;; 	out	VIDEO_PORT, r17
+;; 	nop
+;; 	nop
+;; 	nop
 
-	out	VIDEO_PORT, r16
-	nop
-	nop
-	nop
+;; 	out	VIDEO_PORT, r16
+;; 	nop
+;; 	nop
+;; 	nop
 
-	out	VIDEO_PORT, r17
-	ret
+;; 	out	VIDEO_PORT, r17
+;; 	ret

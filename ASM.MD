@@ -37,7 +37,7 @@ Byte-sized returns are in r24, word-sized in r24:r25
 
 ## registers
 
-call-used (ie potentially trashed by C calls): r18-r27, r30-r31
+call-used (ie potentially trashed by C calls): r0-r1, r18-r27, r30-r31
 call-saved: r2-r17, r28-r29
 
 # instructions

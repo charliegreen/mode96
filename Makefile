@@ -25,7 +25,7 @@ FILES_C := $(shell find . -type f -iname '*.c')
 FILES_H := $(shell find . -type f -iname '*.h')
 
 FILE_S_VMODE_ASM_SOURCE := video.s # the file included into uzeboxVideoEngineCore.s as VMODE_ASM_SOURCE
-FILES_S := foo.s tiles.s	   # any other assembly files to be linked in
+FILES_S := library.s tiles.s	   # any other assembly files to be linked in
 
 # --------------------------------
 FILES_C := $(patsubst ./%,%,$(FILES_C))

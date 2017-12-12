@@ -15,12 +15,6 @@
 	.global vram		; just global for debugging
 	.global m96_palette
 	
-	.global ClearVram
-	.global SetFont
-	.global SetTileTable
-	.global InitializeVideoMode
-	.global DisplayLogo
-	
 ;;; ================================================================================ globals
 	.section .bss
 vram:		.space VRAM_SIZE
@@ -50,13 +44,27 @@ _test_vram:
 	.byte	0
 	.byte	0x33
 	.byte	0
+
+	.byte	1
+	.byte	0x21
+	.byte	2
+	.byte	2
+	.byte	0x10
+	.byte	1
+	
+	.byte	1
+	.byte	0x12
+	.byte	2
+	.byte	2
+	.byte	0x01
+	.byte	1
 	.endm
 
 	.rept 16
 	FOO
 	.endr
 	
-	.space	VRAM_SIZE-12*16
+	.space	VRAM_SIZE-24*16
 
 _test_m96_palette:
 	;; colors:   B-G--R--
@@ -131,7 +139,7 @@ do_test_setup:
 sub_video_mode96:
 	;; do setup
 	;; WAIT	r19, 1347	; waste a scanline to align with next hsync
-	WAIT	r19, 1342
+	WAIT	r19, 1341
 	
 sub_video_mode96_entry:		; just a debugging symbol for gdb to break on
 	ldi	YL, lo8(vram)
@@ -148,6 +156,7 @@ sub_video_mode96_entry:		; just a debugging symbol for gdb to break on
 	ldi	r16, 0x52
 	mov	r2, r16		; hold a background color
 
+	clr	r24		; our tile Y index
 	clr	r25		; our tile row counter (0-7)
 
 render_scanline:
@@ -167,19 +176,18 @@ render_scanline:
 	;; sbiw	Y, 2
 
 	inc	r25		; increment row counter
-	sbrc	r25, 3		; if r25 has not yet reached 8 (0b1000), skip
-	clr	r25
+	sbrs	r25, 3		; if r25 has reached 8 (0b1000), skip
+	rjmp	1f
+	
+	clr	r25		; clear row counter
+	inc	r24		; increment tile Y index
+1:	
 
 	;; output a background pixel so that we can distinguish between uzem background and our background
 	out	VIDEO_PORT, r2
 
 	WAIT	r19, 51 - CENTER_ADJUSTMENT
-
-	;; We're getting 0x64 looping to 0x253 in TCNT1, which means our scanline loop is 495 cycles long
-	;; It's a scanline, it should be 1820 cycles, so wait 1325
-	WAIT	r19, 1225
-
-	;; WAIT	r19, 300
+	;; WAIT	r19, 1225
 	
 	;; if we've just drawn the last scanline, be done
 	dec	r10
@@ -202,34 +210,3 @@ frame_end:
 	sts _SFR_MEM_ADDR(TIFR1),ZL
 	
 	ret			; returning from call to sub_video_mode96
-
-VideoModeVsync:
-	;; TODO
-	ret
-
-;;; ================================================================================ C functions
-ClearVram:
-	ldi	r30, lo8(VRAM_SIZE)
-	ldi	r31, hi8(VRAM_SIZE)
-
-	ldi	XL, lo8(vram)
-	ldi	XH, hi8(vram)
-
-0:
-	st	X+, r1
-	sbiw	r30, 1
-	brne	0b
-
-	clr	r1
-
-	ret
-
-SetTileTable:
-	sts	font_lo, r24
-	sts	font_hi, r25
-	ret
-	
-InitializeVideoMode:
-DisplayLogo:
-SetFont:
-	ret

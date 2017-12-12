@@ -38,41 +38,16 @@ static void hexdump(u8 x0, u8 y0, u8*p, u8 len) {
 
 int main() {
     GetPrngNumber(GetTrueRandomSeed());
-    SetTileTable(font);
+    // SetTileTable(font);
     // SetFontTilesIndex(0);
     ClearVram();
 
     do_test_setup();
-    
-    u8 line = 0;
-    
-    // unsigned int test = test_get();
-    // PrintInt(4, line, test, true);
-    // PrintHexInt(6, line, test);
-    // PrintChar(11, line++, test);
 
-    // Print(0, line++, PSTR("==== new test ===="));
-    // extern bool buffer_test(unsigned char*buffer, bool init);
-
-    // unsigned char buffer[27];
-    // const char*foo = "abcdefghijklmnopqrstuvwxyz";
-    // for (u8 i = 0; i < sizeof(buffer); i++)
-    // 	buffer[i] = foo[i];
-    // buffer[26] = 0;
-
-    // PrintRam(0, line++, buffer);
-    // hexdump(0, line, buffer, sizeof(buffer));
-    // line += 4;
+    SetTile(1, 1, 0);
     
-    // buffer_test(buffer, true);
-    // PrintRam(0, line++, buffer);
-    // hexdump(0, line, buffer, sizeof(buffer));
-    // line += 4;
-
-    // buffer_test(buffer, false);
-    // PrintRam(0, line++, buffer);
-    
-    Print(0, line++, PSTR("Done"));
+    // u8 line = 0;    
+    // Print(0, line++, PSTR("Done"));
     while (true) {
 	WaitVsync(1);
 	button_update();
