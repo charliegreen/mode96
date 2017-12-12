@@ -13,19 +13,26 @@
 ;;; ========================================
 ;;; Expects:
 ;;;   Y: set to beginning of current row of VRAM
+;;;   r25: tile row counter (0-7)
 begin_code_tile_row:
 	;; ---------------------------------------- initial register values
-	ldi	r16, FONT_TILE_WIDTH ; should be FONT_TILE_SIZE, but for now each tile is just one row
+	ldi	r16, FONT_TILE_SIZE
 	mov	r5, r16
 	ldi	r16, 8		; only go through this many tiles before returning
 	mov	r6, r16
 
 	.global begin_code_tile_row_bkpt
-begin_code_tile_row_bkpt:	
+begin_code_tile_row_bkpt:
 
 	;; pm converts from byte addresses to word addresses (divides by 2)
 	ldi	r22, lo8(pm(code_tile_table_base))
 	ldi	r23, hi8(pm(code_tile_table_base))
+
+	;; add row index
+	ldi	r16, FONT_TILE_WIDTH
+	mul	r25, r16
+	add	r22, r0
+	adc	r23, r1
 	
 	ldi	XH, hi8(m96_palette)
 
@@ -52,31 +59,29 @@ begin_code_tile_row_bkpt:
 
 .macro TILE_ROW n,p0,p1,p2,p3,p4,p5
 _tile_\n:
-
 	out	VIDEO_PORT, \p0
 	
 	;; ---------------------------------------- read VRAM
 	sbrs	r6, 0
 	rjmp	1f
 
-	;; out	VIDEO_PORT, \p1
-
 	;; color, then text
 	ld	r20, Y+
+	out	VIDEO_PORT, \p1
 	ld	r4, Y+
 	rjmp	2f
 1:
-	;; out	VIDEO_PORT, \p1
 	ld	r4, Y+
+	out	VIDEO_PORT, \p1
 	ld	r20, Y
 	swap	r20
 2:
-	out	VIDEO_PORT, \p1
+	;; out	VIDEO_PORT, \p1
+	out	VIDEO_PORT, \p2
 	andi	r20, 0x0F
 
 	;; ---------------------------------------- loading colors
 	lsl	r20
-	out	VIDEO_PORT, \p2
 
 	ldi	XL, lo8(m96_palette)
 	add	XL, r20
@@ -86,11 +91,13 @@ _tile_\n:
 	;; ---------------------------------------- loading next tile
 	mul	r4, r5
 
-	out	VIDEO_PORT, \p4
 	add	r0, r22
+	out	VIDEO_PORT, \p4
 	adc	r1, r23
 
 	movw	r30, r0
+
+	dec	r6		; we can move this up here because out and ld don't modify SREG
 
 	out	VIDEO_PORT, \p5
 	
@@ -98,17 +105,45 @@ _tile_\n:
 	ld	r19, X+
 	ld	r18, X
 	
-	dec	r6
 	breq	.+2
 	ijmp
 	ret
 .endm
 
-code_tile_table_base:	
-	TILE_ROW	0, r19,r18,r18,r18,r18,r18
-	TILE_ROW	1, r19,r18,r19,r18,r19,r18
-	TILE_ROW	2, r19,r19,r18,r18,r19,r19
+#define F r19
+#define _ r18	
+	
+code_tile_table_base:
+	TILE_ROW	0_0	_ _ _ _ _ _
+	TILE_ROW	0_1	_ _ F F _ _
+	TILE_ROW	0_2	_ F F F F _
+	TILE_ROW	0_3	_ F F F F _
+	TILE_ROW	0_4	_ _ F F _ _
+	TILE_ROW	0_5	_ _ _ _ _ _
+	TILE_ROW	0_6	F _ F _ F _
+	TILE_ROW	0_7	_ F _ F _ F
 
+	TILE_ROW	1_0	_ _ _ _ _ _
+	TILE_ROW	1_1	_ F F F _ _
+	TILE_ROW	1_2	F _ _ _ F _
+	TILE_ROW	1_3	F _ _ _ F _
+	TILE_ROW	1_4	F F F F F _
+	TILE_ROW	1_5	F _ _ _ F _
+	TILE_ROW	1_6	F _ _ _ F _
+	TILE_ROW	1_7	F _ _ _ F _
+
+	TILE_ROW	2_0	_ _ _ _ _ _
+	TILE_ROW	2_1	F F F F _ _
+	TILE_ROW	2_2	F _ _ _ F _
+	TILE_ROW	2_3	F _ _ _ F _
+	TILE_ROW	2_4	F F F F _ _
+	TILE_ROW	2_5	F _ _ _ F _
+	TILE_ROW	2_6	F _ _ _ F _
+	TILE_ROW	2_7	F F F F _ _
+
+#undef F
+#undef _	
+	
 	.rept	FONT_TILE_WIDTH*256
 	nop
 	.endr

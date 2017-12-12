@@ -131,7 +131,7 @@ do_test_setup:
 sub_video_mode96:
 	;; do setup
 	;; WAIT	r19, 1347	; waste a scanline to align with next hsync
-	WAIT	r19, 1343
+	WAIT	r19, 1342
 	
 sub_video_mode96_entry:		; just a debugging symbol for gdb to break on
 	ldi	YL, lo8(vram)
@@ -147,13 +147,15 @@ sub_video_mode96_entry:		; just a debugging symbol for gdb to break on
 
 	ldi	r16, 0x52
 	mov	r2, r16		; hold a background color
-	
+
+	clr	r25		; our tile row counter (0-7)
+
 render_scanline:
 	;; generate hsync pulse
 	;; At the `cbi` inside hsync_pulse (first instruction), TCNT1L (0x84) should be 0x68;
 	;; `rcall` and `lds` both take 2 cycles, so r8 should be 0x64 (I think..)
 	lds	r8, TCNT1L
-	lds	r9, TCNT1H	;0x64, 0x253
+	lds	r9, TCNT1H	;0x64, 0x2b7
 	rcall	hsync_pulse	;156 cycles (154 inside hsync_pulse)
 	
 	WAIT	r19, HSYNC_USABLE_CYCLES - AUDIO_OUT_HSYNC_CYCLES + CENTER_ADJUSTMENT - 9
@@ -164,6 +166,10 @@ render_scanline:
 	;; decrement Y (last code tile will have loaded everything for its "next" tile)
 	;; sbiw	Y, 2
 
+	inc	r25		; increment row counter
+	sbrc	r25, 3		; if r25 has not yet reached 8 (0b1000), skip
+	clr	r25
+
 	;; output a background pixel so that we can distinguish between uzem background and our background
 	out	VIDEO_PORT, r2
 
@@ -171,7 +177,7 @@ render_scanline:
 
 	;; We're getting 0x64 looping to 0x253 in TCNT1, which means our scanline loop is 495 cycles long
 	;; It's a scanline, it should be 1820 cycles, so wait 1325
-	;; WAIT	r19, 1325
+	WAIT	r19, 1225
 
 	;; WAIT	r19, 300
 	

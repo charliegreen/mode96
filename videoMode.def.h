@@ -9,7 +9,7 @@
 
 #define HSYNC_USABLE_CYCLES 264	// maximum free cycles usable by the hsync and audio (from videoMode1)
 
-#define FONT_TILE_WIDTH  28   // size of a tile row in words (FONT_TILE_SIZE/8 for 6x8 tiles) (TODO)
+#define FONT_TILE_WIDTH  29   // size of a tile row in words (FONT_TILE_SIZE/8 for 6x8 tiles) (TODO)
 #define FONT_TILE_SIZE  (FONT_TILE_WIDTH*TILE_HEIGHT) // size of an entire tile in words
 
 #define TILE_HEIGHT 8
@@ -20,8 +20,8 @@
 #define VRAM_TILES_V 24
 #endif
 
-#define SCREEN_TILES_H 80
-#define SCREEN_TILES_V 24
+#define SCREEN_TILES_H VRAM_TILES_H
+#define SCREEN_TILES_V VRAM_TILES_V
 
 #define VRAM_SIZE (VRAM_TILES_H*VRAM_TILES_V*12/8)
 #define VRAM_ADDR_SIZE 1	// in bytes

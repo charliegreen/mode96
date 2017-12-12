@@ -123,7 +123,7 @@ $(BUILD_DIR)/%.o: %.s | $(GEN_DIR)
 # This also means we should add kernel dependencies so the kernel gets rebuilt when we modify our
 # own code; VMODE_ASM_SOURCE gets #include'd from uzeboxVideoEngineCore.s
 
-$(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE)
+$(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE) $(FILES_H)
 
 # TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
 # depending on them
