@@ -15,118 +15,13 @@
 	.global vram		; just global for debugging
 	.global m96_palette
 	
-;;; ================================================================================ globals
 	.section .bss
 vram:		.space VRAM_SIZE
-m96_palette:	.space 32	; type is ColorCombo[16]
 
 font_lo:	.space 1
 font_hi:	.space 1
 
-;;; ================================================================================ core code
 	.section .text
-
-;;; -------------------------------------------------- data to initialize VRAM/palette with
-;;; (we can't just do this up there because .bss is zeroed)
-_test_vram:
-	;; simulated VRAM; starts as [text][color]
-	.macro FOO
-	.byte	2		; 4 unique markers
-	.byte	0x21
-	.byte	1
-	.byte	1
-	.byte	0x10
-	.byte	2
-
-	.byte	0		; 4 EOL markers
-	.byte	0x33
-	.byte	0
-	.byte	0
-	.byte	0x33
-	.byte	0
-
-	.byte	1
-	.byte	0x21
-	.byte	2
-	.byte	2
-	.byte	0x10
-	.byte	1
-	
-	.byte	1
-	.byte	0x12
-	.byte	2
-	.byte	2
-	.byte	0x01
-	.byte	1
-	.endm
-
-	.rept 16
-	FOO
-	.endr
-	
-	.space	VRAM_SIZE-24*16
-
-_test_m96_palette:
-	;; colors:   B-G--R--
-	;; grey:   0b01010010: 0x52
-	;; blue:   0b11000000: 0xc0
-	;; green:  0b00010000: 0x10
-	;; red:    0b00000010: 0x02
-	;; orange: 0b00010101: 0x15
-	;; yellow: 0b00110110: 0x36
-	;; cyan:   0b01010000: 0xa8
-	;; violet: 0b10000011: 0x83
-
-	.byte	0xc0		; blue on orange
-	.byte	0x15
-
-	.byte	0x02		; red on green
-	.byte	0x10
-
-	.byte	0x83		; violet on yellow
-	.byte	0x36
-
-	.byte	0xa8		; cyan on red
-	.byte	0x02
-
-	.space	24
-
-;;; -------------------------------------------------- initialize VRAM/palette
-
-	.global do_test_setup
-;;; C-callable, should be called once before any video rendering
-do_test_setup:
-	;; ---------------------------------------- copy vram
-	ldi	ZL, lo8(_test_vram)
-	ldi	ZH, hi8(_test_vram)
-	ldi	XL, lo8(vram)
-	ldi	XH, hi8(vram)
-	ldi	r24, lo8(VRAM_SIZE)
-	ldi	r25, hi8(VRAM_SIZE)
-
-0:
-	lpm	r17, Z+
-	st	X+, r17
-	sbiw	r24, 1
-	brne	0b
-
-	;; ---------------------------------------- copy palette
-	ldi	ZL, lo8(_test_m96_palette)
-	ldi	ZH, hi8(_test_m96_palette)
-	ldi	XL, lo8(m96_palette)
-	ldi	XH, hi8(m96_palette)
-	ldi	r18, 32
-
-0:
-	lpm	r19, Z+
-	st	X+, r19
-	dec	r18
-	brne	0b
-	
-	ret
-	
-;;; -------------------------------------------------- actual code
-
 ;;; ========================================
 ;;; Mode 96
 ;;;
@@ -187,7 +82,7 @@ render_scanline:
 	out	VIDEO_PORT, r2
 
 	WAIT	r19, 51 - CENTER_ADJUSTMENT
-	;; WAIT	r19, 1225
+	WAIT	r19, 225
 	
 	;; if we've just drawn the last scanline, be done
 	dec	r10

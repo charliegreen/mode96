@@ -19,6 +19,9 @@ Note that some registers have special features:
 	* r31:r30 = Z = ZH:ZL
 
 # calling conventions
+See [this](http://www.atmel.com/webdoc/AVRLibcReferenceManual/FAQ_1faq_reg_usage.html)
+and [this](https://gcc.gnu.org/wiki/avr-gcc).
+
 ## arguments
 Start at r25 and go down. Each argument spans two registers, even if it's a one-byte argument. eg:
 
@@ -37,8 +40,11 @@ Byte-sized returns are in r24, word-sized in r24:r25
 
 ## registers
 
-call-used (ie potentially trashed by C calls): r0-r1, r18-r27, r30-r31
+call-used (ie potentially trashed by C calls): r0, r18-r27, r30-r31, SREG's T flag
 call-saved: r2-r17, r28-r29
+
+Assembly code may use `r1`, but C code always assumes it to be 0, so be sure to clear it before
+returning.
 
 # instructions
 ## I/O (to RAM or elsewhere)

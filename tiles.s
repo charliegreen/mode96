@@ -4,12 +4,6 @@
 
 	.global	begin_code_tile_row
 
-;;; NOTE: maximum possible resolution (at least, for uzem) appears to be around 2 cycles/pixel.
-;;; Observing 67 _tile_bg loops to get a perfect screen fit at 13 cycles/_tile_bg (17 cycles per
-;;; loop), plus 15 cycles up front for _tile_scanline_start and 16 for _tile_scanline_end
-;;; (one more because of end of loop), for a total of 67*17+15+16 = 1170 cycles per 6*69 = 414 pixels,
-;;; giving us an end result of 2.826 cycles/pixel
-
 ;;; ========================================
 ;;; Expects:
 ;;;   Y: set to beginning of current row of VRAM
@@ -19,12 +13,8 @@ begin_code_tile_row:
 	;; ---------------------------------------- initial register values
 	ldi	r16, FONT_TILE_SIZE
 	mov	r5, r16
-	ldi	r16, 8		; only go through this many tiles before returning
-	;; ldi	r16, 4
+	ldi	r16, SCREEN_TILES_H ; only go through this many tiles before returning
 	mov	r6, r16
-
-	.global begin_code_tile_row_bkpt
-begin_code_tile_row_bkpt:
 
 	;; pm converts from byte addresses to word addresses (divides by 2)
 	ldi	r22, lo8(pm(code_tile_table_base))
@@ -37,12 +27,10 @@ begin_code_tile_row_bkpt:
 	adc	r23, r1
 
 	;; Set VRAM pointer to correct value
-
 	ldi	YL, lo8(vram)
 	ldi	YH, hi8(vram)
 	
-	;; ldi	r16, SCREEN_TILES_H*3/2
-	ldi	r16, 8*3/2
+	ldi	r16, SCREEN_TILES_H*3/2
 	mul	r24, r16
 	add	YL, r0
 	adc	YH, r1
@@ -89,7 +77,6 @@ _tile_\n:
 	ld	r20, Y
 	swap	r20
 2:
-	;; out	VIDEO_PORT, \p1
 	out	VIDEO_PORT, \p2
 	andi	r20, 0x0F
 
@@ -156,38 +143,3 @@ code_tile_table_base:
 
 #undef F
 #undef _	
-	
-;; 	.rept	FONT_TILE_SIZE*0x30
-;; 	nop
-;; 	.endr
-;; error_tile:
-;; 	;; a tile that will be rendered if we ever read the wrong tile index and jump too far
-;; 	ldi	r16, 0x07	; BRIGHT RED
-;; 	out	VIDEO_PORT, r16
-	
-;; 	ldi	r17, 0x38	; BRIGHT GREEN
-;; 	nop
-;; 	nop
-
-;; 	out	VIDEO_PORT, r17
-;; 	nop
-;; 	nop
-;; 	nop
-
-;; 	out	VIDEO_PORT, r16
-;; 	nop
-;; 	nop
-;; 	nop
-
-;; 	out	VIDEO_PORT, r17
-;; 	nop
-;; 	nop
-;; 	nop
-
-;; 	out	VIDEO_PORT, r16
-;; 	nop
-;; 	nop
-;; 	nop
-
-;; 	out	VIDEO_PORT, r17
-;; 	ret

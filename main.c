@@ -9,10 +9,22 @@
 
 extern u8 vram[VRAM_SIZE];	// just for debugging
 
-extern void do_test_setup(void);
+// colors:   B-G--R--
+// grey:   0b01010010: 0x52
+// blue:   0b11000000: 0xc0
+// green:  0b00010000: 0x10
+// red:    0b00000010: 0x02
+// orange: 0b00010101: 0x15
+// yellow: 0b00110110: 0x36
+// cyan:   0b01010000: 0xa8
+// violet: 0b10000011: 0x83
 
-// extern unsigned int test_get();
-// extern bool buffer_test(char*buffer, bool init);
+ColorCombo m96_palette[16] = {
+    { 0xc0, 0x15 },		// blue on orange
+    { 0x02, 0x10 }, 		// red on green
+    { 0x83, 0x36 },		// violet on yellow
+    { 0xa8, 0x02 },		// cyan on red
+};
 
 typedef struct {
     u16 prev;			// Previous buttons that were held
@@ -42,10 +54,11 @@ int main() {
     // SetFontTilesIndex(0);
     ClearVram();
 
-    do_test_setup();
+    for (u8 row = 0; row < 20; row++)
+    	for (u8 col = 0; col < SCREEN_TILES_H; col++) {
+    	    SetTileBoth(col, row, (row+col)%2, 1);
+    	}
 
-    SetTile(1, 1, 0);
-    
     // u8 line = 0;    
     // Print(0, line++, PSTR("Done"));
     while (true) {

@@ -15,9 +15,9 @@
 #define TILE_HEIGHT 8
 #define TILE_WIDTH 6
 
-#define VRAM_TILES_H 80
+#define VRAM_TILES_H 40
 #ifndef VRAM_TILES_V
-#define VRAM_TILES_V 24
+#define VRAM_TILES_V 28
 #endif
 
 #define SCREEN_TILES_H VRAM_TILES_H
