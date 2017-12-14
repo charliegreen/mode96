@@ -27,11 +27,17 @@ FILES_H := $(shell find . -type f -iname '*.h')
 FILE_S_VMODE_ASM_SOURCE := video.s # the file included into uzeboxVideoEngineCore.s as VMODE_ASM_SOURCE
 FILES_S := library.s tiles.s	   # any other assembly files to be linked in
 
+FONT_PNG := font.png
+
 # --------------------------------
 FILES_C := $(patsubst ./%,%,$(FILES_C))
 FILES_S := $(patsubst ./%,%,$(FILES_S))
 AUX_TARGETS := $(patsubst %,$(BUILD_DIR)/%,$(AUX_TARGETS))
 DEP_DIR := $(BUILD_DIR)/dep
+
+FONT_S := $(GEN_DIR)/$(patsubst %.png,%.s,$(FONT_PNG))
+FONT_O := $(subst /,_,$(FONT_S))
+FONT_O := $(patsubst %.s,%.o,$(FONT_O))
 
 # ================================ other globals
 MCU     := atmega644
@@ -80,7 +86,7 @@ FILES_KERNEL += uzeboxCore.c uzeboxSoundEngine.c uzeboxVideoEngine.c
 FILES_KERNEL := $(patsubst %,$(KERNEL)/%,$(FILES_KERNEL))
 
 # objects that must be built in order to link
-OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S)
+OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S) $(FONT_O)
 OBJECTS := $(patsubst %.c,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %.s,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(OBJECTS))
@@ -120,25 +126,34 @@ $(BUILD_DIR)/%.o: %.s | $(GEN_DIR)
 	@echo "CC $<"
 	@$(CC) $(INCLUDES) $(ASMFLAGS) -c $< -o $@
 
+# TODO: figure out how to not have a duplicate rule body here
+$(BUILD_DIR)/$(FONT_O): $(FONT_S)
+	@echo "CC $<"
+	@$(CC) $(INCLUDES) $(ASMFLAGS) -c $< -o $@
+
 # This also means we should add kernel dependencies so the kernel gets rebuilt when we modify our
 # own code; VMODE_ASM_SOURCE gets #include'd from uzeboxVideoEngineCore.s
 
 $(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE) $(FILES_H)
 
-# TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
-# depending on them
-$(GEN_DIR): $(patsubst $(DATA_DIR)/%.png,$(GEN_DIR)/%.inc, \
-	$(shell find $(DATA_DIR) -type f -iname '*.png'))
+$(FONT_S): $(DATA_DIR)/$(FONT_PNG)
+	python3 tile_generator.py $< $(GEN_DIR)
 
-# $(DATA_DIR)/%.png: $(DATA_DIR)/%.map.json
-# $(GEN_DIR)/%.inc $(GEN_DIR)/%.h: $(DATA_DIR)/%.png # $(DATA_DIR)/%.map.json
-#	$(BIN_DIR)/tile_converter.py $< $(GEN_DIR)
-$(GEN_DIR)/%.inc: $(DATA_DIR)/%.png
-	gconvert $(DATA_DIR)/font.gconvert.xml
-	@echo "*** Gconvert finished ***"
-# remove warning about only using video mode 9
-	@sed -ni '/^#if/,/^#endif/ d; p' $@
-	@echo
+# # TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
+# # depending on them
+# $(GEN_DIR): $(patsubst $(DATA_DIR)/%.png,$(GEN_DIR)/%.inc, \
+# 	$(shell find $(DATA_DIR) -type f -iname '*.png'))
+$(GEN_DIR): $(FONT_S)
+
+# # $(DATA_DIR)/%.png: $(DATA_DIR)/%.map.json
+# # $(GEN_DIR)/%.inc $(GEN_DIR)/%.h: $(DATA_DIR)/%.png # $(DATA_DIR)/%.map.json
+# #	$(BIN_DIR)/tile_converter.py $< $(GEN_DIR)
+# $(GEN_DIR)/%.inc: $(DATA_DIR)/%.png
+# 	gconvert $(DATA_DIR)/font.gconvert.xml
+# 	@echo "*** Gconvert finished ***"
+# # remove warning about only using video mode 9
+# 	@sed -ni '/^#if/,/^#endif/ d; p' $@
+# 	@echo
 
 # -------------------------------- final targets
 $(TARGET): $(OBJECTS)

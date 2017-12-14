@@ -17,8 +17,8 @@ begin_code_tile_row:
 	mov	r6, r16
 
 	;; pm converts from byte addresses to word addresses (divides by 2)
-	ldi	r22, lo8(pm(code_tile_table_base))
-	ldi	r23, hi8(pm(code_tile_table_base))
+	ldi	r22, lo8(pm(m96_font))
+	ldi	r23, hi8(pm(m96_font))
 
 	;; add row index
 	ldi	r16, FONT_TILE_WIDTH
@@ -110,36 +110,36 @@ _tile_\n:
 	ret
 .endm
 
-#define F r19
-#define _ r18	
+;; #define F r19
+;; #define _ r18	
 	
-code_tile_table_base:
-	TILE_ROW	0_0	_ _ _ _ _ _
-	TILE_ROW	0_1	_ _ F F _ _
-	TILE_ROW	0_2	_ F F F F _
-	TILE_ROW	0_3	_ F F F F _
-	TILE_ROW	0_4	_ _ F F _ _
-	TILE_ROW	0_5	_ _ _ _ _ _
-	TILE_ROW	0_6	F _ F _ F _
-	TILE_ROW	0_7	_ F _ F _ F
+;; m96_font:
+;; 	TILE_ROW	0_0	_ _ _ _ _ _
+;; 	TILE_ROW	0_1	_ _ F F _ _
+;; 	TILE_ROW	0_2	_ F F F F _
+;; 	TILE_ROW	0_3	_ F F F F _
+;; 	TILE_ROW	0_4	_ _ F F _ _
+;; 	TILE_ROW	0_5	_ _ _ _ _ _
+;; 	TILE_ROW	0_6	F _ F _ F _
+;; 	TILE_ROW	0_7	_ F _ F _ F
 
-	TILE_ROW	1_0	_ _ _ _ _ _
-	TILE_ROW	1_1	_ F F F _ _
-	TILE_ROW	1_2	F _ _ _ F _
-	TILE_ROW	1_3	F _ _ _ F _
-	TILE_ROW	1_4	F F F F F _
-	TILE_ROW	1_5	F _ _ _ F _
-	TILE_ROW	1_6	F _ _ _ F _
-	TILE_ROW	1_7	F _ _ _ F _
+;; 	TILE_ROW	1_0	_ _ _ _ _ _
+;; 	TILE_ROW	1_1	_ F F F _ _
+;; 	TILE_ROW	1_2	F _ _ _ F _
+;; 	TILE_ROW	1_3	F _ _ _ F _
+;; 	TILE_ROW	1_4	F F F F F _
+;; 	TILE_ROW	1_5	F _ _ _ F _
+;; 	TILE_ROW	1_6	F _ _ _ F _
+;; 	TILE_ROW	1_7	F _ _ _ F _
 
-	TILE_ROW	2_0	_ _ _ _ _ _
-	TILE_ROW	2_1	F F F F _ _
-	TILE_ROW	2_2	F _ _ _ F _
-	TILE_ROW	2_3	F _ _ _ F _
-	TILE_ROW	2_4	F F F F _ _
-	TILE_ROW	2_5	F _ _ _ F _
-	TILE_ROW	2_6	F _ _ _ F _
-	TILE_ROW	2_7	F F F F _ _
+;; 	TILE_ROW	2_0	_ _ _ _ _ _
+;; 	TILE_ROW	2_1	F F F F _ _
+;; 	TILE_ROW	2_2	F _ _ _ F _
+;; 	TILE_ROW	2_3	F _ _ _ F _
+;; 	TILE_ROW	2_4	F F F F _ _
+;; 	TILE_ROW	2_5	F _ _ _ F _
+;; 	TILE_ROW	2_6	F _ _ _ F _
+;; 	TILE_ROW	2_7	F F F F _ _
 
-#undef F
-#undef _	
+;; #undef F
+;; #undef _	

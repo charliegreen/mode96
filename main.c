@@ -5,7 +5,7 @@
 #include <uzebox.h>
 
 // #include "data/font-6x8-full.inc"
-#include "_gen_/font.inc"
+// #include "_gen_/font.inc"
 
 extern u8 vram[VRAM_SIZE];	// just for debugging
 
@@ -54,11 +54,12 @@ int main() {
     // SetFontTilesIndex(0);
     ClearVram();
 
-    for (u8 row = 0; row < 20; row++)
-    	for (u8 col = 0; col < SCREEN_TILES_H; col++) {
-    	    SetTileBoth(col, row, (row+col)%2, 1);
-    	}
-
+    for (u8 section = 0; section < 3; section++) {
+	for (u8 row = 0; row < 8; row++)
+	    for (u8 col = 0; col < 16; col++) {
+		SetTileBoth(col, section+row, col + 16*row, (col+section) % 4);
+	    }
+    }
     // u8 line = 0;    
     // Print(0, line++, PSTR("Done"));
     while (true) {
