@@ -40,7 +40,8 @@ sub_video_mode96_entry:		; just a debugging symbol for gdb to break on
 	ldi	YL, lo8(vram)
 	ldi	YH, hi8(vram)
 
-	ldi	r21, FONT_TILE_SIZE
+	;; ldi	r21, FONT_TILE_SIZE
+	nop
 	ldi	r23, FONT_TILE_WIDTH
 	
 	;; r10 is our scanline counter; fill it with the number of scanlines to draw

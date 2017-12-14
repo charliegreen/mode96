@@ -141,3 +141,25 @@ setting everything up for the code tiles.
 
 If we block out 160 cycles for the HSYNC and (arbitrarily) 220 more for miscellany (totalling 380),
 then we get 1440 cycles for code tiles. For a 60-wide screen, that gives us 24 cycles per code tile.
+
+## ROM consumption
+
+With 29 bytes per tile row and 96 tiles, the font table consumes over 70% of program memory. This is
+obviously unacceptable. At the cost of a few more cycles, we can probably cut this down dramatically
+with a secondary table, since there are a maximum of 64 unique code tile rows.
+
+Instead of having the one font table, we can do this:
+
+	m96_font:
+		...
+		.byte	0b001110	; 'A', row 0
+		.byte	0b010001	; 'A', row 1
+		.byte	0b010001	; ...
+		.byte	0b010001
+		.byte	0b011111
+		.byte	0b010001
+		.byte	0b010001
+		.byte	0b000000	; 'A', row 7
+	
+	m96_font_tiles:
+		;; code tile table here

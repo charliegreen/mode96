@@ -73,6 +73,9 @@
 ;;;   r19:r18: foreground/background colors
 ;;;   r20: color index
 ;;;   r23:r22: address of tile table plus current tile row offset
+;;;   XH: hi(m96_palette)
+;;;   X: for reading color values from the palette
+;;;   Y: VRAM pointer
 	
 	;; -------------------------------------------------- reading VRAM for [text][color|garbage]
 	ld	r4, Y+		; load text index

@@ -86,9 +86,12 @@ FILES_KERNEL += uzeboxCore.c uzeboxSoundEngine.c uzeboxVideoEngine.c
 FILES_KERNEL := $(patsubst %,$(KERNEL)/%,$(FILES_KERNEL))
 
 # objects that must be built in order to link
-OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S) $(FONT_O)
+OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S)
 OBJECTS := $(patsubst %.c,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %.s,%.o,$(OBJECTS))
+ifneq ($(FONT_PNG),)
+OBJECTS += $(FONT_O)
+endif
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(OBJECTS))
 
 # ================================ build
@@ -136,8 +139,10 @@ $(BUILD_DIR)/$(FONT_O): $(FONT_S)
 
 $(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE) $(FILES_H)
 
+ifneq ($(FONT_PNG),)
 $(FONT_S): $(DATA_DIR)/$(FONT_PNG)
 	python3 tile_generator.py $< $(GEN_DIR)
+endif
 
 # # TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
 # # depending on them
