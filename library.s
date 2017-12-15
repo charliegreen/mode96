@@ -1,6 +1,8 @@
 ;;; C-Callable functions for mode 96
 
 #include "videoMode.def.h"
+
+;;; TODO: add all the usual Print functions, but that take color options
 	
 	.global ClearVram
 	.global SetTile
@@ -104,11 +106,12 @@ get_tile_addr_color:
 	ret
 
 ;;; ========================================
-;;; SetTile
+;;; SetTile/SetFont
 ;;; r24: X pos (8-bit)
 ;;; r22: Y pos (8-bit)
 ;;; r20: tile number (8-bit)
 SetTile:
+SetFont:
 	rcall	get_tile_addr_text
 	st	Z, r20
 	ret
@@ -179,5 +182,4 @@ VideoModeVsync:
 SetTileTable:	
 InitializeVideoMode:
 DisplayLogo:
-SetFont:
 	ret

@@ -99,6 +99,9 @@ render_scanline:
 	rjmp	render_scanline
 
 frame_end:
+	nop
+	lds	r8, TCNT1L
+	lds	r9, TCNT1H
 	rcall	hsync_pulse
 
 	;; set vsync flag & flip field

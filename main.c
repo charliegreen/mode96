@@ -69,6 +69,8 @@ int main() {
     SetTile(SCREEN_TILES_H-2, 0, '1'-32);
     SetTile(SCREEN_TILES_H-2, SCREEN_TILES_V-1, '2'-32);
     SetTile(0, SCREEN_TILES_V-1, '3'-32);
+
+    Print(4, 0, PSTR("Whoop!!"));
     
     // u8 line = 0;    
     // Print(0, line++, PSTR("Done"));
