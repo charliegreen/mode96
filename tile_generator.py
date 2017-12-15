@@ -17,68 +17,10 @@ HEADER = """
 ;;;
 ;;; It is intended for usage with video mode 96.
 
-#include "../videoMode.def.h"
+#include "../common.def.h"
 """[1:]
 
-TILE_ROW_ASM = """
-	out	VIDEO_PORT, {0}
-	
-	;; ---------------------------------------- read VRAM
-	sbrs	r6, 0
-	rjmp	1f
-
-	;; color, then text
-	ld	r20, Y+
-	out	VIDEO_PORT, {1}
-	ld	r4, Y+
-	rjmp	2f
-1:
-	ld	r4, Y+
-	out	VIDEO_PORT, {1}
-	ld	r20, Y
-	swap	r20
-2:
-	out	VIDEO_PORT, {2}
-	andi	r20, 0x0F
-
-	;; ---------------------------------------- loading colors
-	lsl	r20
-
-	ldi	XL, lo8(m96_palette)
-	add	XL, r20
-
-	out	VIDEO_PORT, {3}
-
-	;; ---------------------------------------- loading next tile
-	;; r4 is now an index into m96_font
-
-	ldi	ZL, lo8(m96_font)
-	ldi	ZH, hi8(m96_font)
-	add	ZL, r25		; tile row counter
-	ldi	r16, 8
-	mul	r4, r16
-	add	ZL, r0
-	adc	ZH, r1
-	ld	r4, Z
-
-	mul	r4, r5
-	add	r0, r22
-	out	VIDEO_PORT, {4}
-	adc	r1, r23
-	movw	r30, r0
-
-	dec	r6		; we can move this up here because out and ld don't modify SREG
-
-	out	VIDEO_PORT, {5}
-	
-	;; ---------------------------------------- load colors
-	ld	r19, X+
-	ld	r18, X
-	
-	breq	.+2
-	ijmp
-	ret
-"""
+TILE_ROW_ASM = "\tTILE_ROW\t{}\t{} {} {} {} {} {}\t; {}\n"
 
 def load_png(filepath):
     reader = png.Reader(filepath)
@@ -149,10 +91,8 @@ if __name__ == '__main__':
         f.write("\n")
         f.write("\t.section .text\n")
         f.write("\t.global m96_rows\n")
-        f.write("m96_rows:")
+        f.write("m96_rows:\n")
 
         for rowi in range(len(unique_rows)):
-            f.write("\n;;;---------------------------------------- tile row {}: {}\n".format(
-                rowi, unique_rows[rowi]))
-            f.write("_tilerow_{}:".format(rowi))
-            f.write(TILE_ROW_ASM.format(*['r18' if x == '1' else 'r19' for x in unique_rows[rowi]]))
+            rargs = ['R_FG' if x == '1' else 'R_BG' for x in unique_rows[rowi]]
+            f.write(TILE_ROW_ASM.format(rowi, *rargs, unique_rows[rowi]))

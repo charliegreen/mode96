@@ -1,13 +1,11 @@
-#include "videoMode.def.h"
+#include "common.def.h"
 	
 	.section .text
 
 	.global	begin_code_tile_row
-	.global begin_code_tile_row_bkpt
 
 ;;; ========================================
 ;;; Expects:
-;;;   Y: set to beginning of current row of VRAM
 ;;;   r25: tile row counter (0-7)
 ;;;   r24: tile Y index
 begin_code_tile_row:
@@ -21,16 +19,9 @@ begin_code_tile_row:
 	ldi	r22, lo8(pm(m96_rows))
 	ldi	r23, hi8(pm(m96_rows))
 
-	;; ;; add row index
-	;; ldi	r16, FONT_TILE_WIDTH
-	;; mul	r25, r16
-	;; add	r22, r0
-	;; adc	r23, r1
-
-	;; Set VRAM pointer to correct value
+	;; Set VRAM pointer to correct value (TODO optimize)
 	ldi	YL, lo8(vram)
 	ldi	YH, hi8(vram)
-	
 	ldi	r16, SCREEN_TILES_H*3/2
 	mul	r24, r16
 	add	YL, r0
@@ -61,7 +52,6 @@ begin_code_tile_row:
 	adc	ZH, r1
 	ld	r4, Z		; lpm?
 
-begin_code_tile_row_bkpt:
 	mul	r4, r5
 	add	r0, r22
 	adc	r1, r23
@@ -69,67 +59,3 @@ begin_code_tile_row_bkpt:
 	
 	dec	r6
 	ijmp
-
-.macro TILE_ROW n,p0,p1,p2,p3,p4,p5
-_tile_\n:
-	out	VIDEO_PORT, \p0
-	
-	;; ---------------------------------------- read VRAM
-	sbrs	r6, 0
-	rjmp	1f
-
-	;; color, then text
-	ld	r20, Y+
-	out	VIDEO_PORT, \p1
-	ld	r4, Y+
-	rjmp	2f
-1:
-	ld	r4, Y+
-	out	VIDEO_PORT, \p1
-	ld	r20, Y
-	swap	r20
-2:
-	out	VIDEO_PORT, \p2
-	andi	r20, 0x0F
-
-	;; ---------------------------------------- loading colors
-	lsl	r20
-
-	ldi	XL, lo8(m96_palette)
-	add	XL, r20
-
-	out	VIDEO_PORT, \p3
-
-	;; ---------------------------------------- loading next tile
-	;; r4 is now an index into m96_font
-
-	ldi	ZL, lo8(m96_font)
-	ldi	ZH, hi8(m96_font)
-	add	ZL, r25		; tile row counter
-	ldi	r16, 8
-	mul	r4, r16
-	add	ZL, r0
-	adc	ZH, r1
-	ld	r4, Z
-
-	mul	r4, r5
-	add	r0, r22
-	out	VIDEO_PORT, \p4
-	adc	r1, r23
-	movw	r30, r0
-
-	dec	r6		; we can move this up here because out and ld don't modify SREG
-
-	out	VIDEO_PORT, \p5
-	
-	;; ---------------------------------------- load colors
-	ld	r19, X+
-	ld	r18, X
-	
-	breq	.+2
-	ijmp
-	ret
-.endm
-
-#define F r19
-#define _ r18	

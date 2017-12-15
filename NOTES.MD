@@ -163,3 +163,55 @@ Instead of having the one font table, we can do this:
 	
 	m96_font_tiles:
 		;; code tile table here
+
+#### TEMPORARY
+
+register usage:
+	everywhere:
+		r1:r0: clobbered, misc scratch
+		r17:r16: clobbered, misc scratch
+		Y: VRAM pointer
+	code tiles:
+		r4: clobbered, used as text index
+		r5: `FONT_TILE_WIDTH`
+		r6: tile index (counter used to determine when we return)
+		r19:r18: foreground/background color values
+		r20: clobbered, used as color index
+		r23:r22: address of tile table (`m96_rows`)
+		XH: `hi(m96_palette)`
+		XL: clobbered, used for reading palette
+		Z: clobbered, for reading/jumping
+	code tile entry point (aside from code tile assignments):
+		r24: tile Y index
+		r25: tile row counter (0-7)
+	video main loop:
+		r2: background color for debugging
+		r10: scanline counter (number of scanlines to draw)
+		r9:r8: clobbered, for reading timing information
+
+new assignments:
+
+x	r1:r0: clobbered, misc scratch
+
+constants:
+	r2: background color for debugging
+	r3:
+	r5:r4: `m96_font`
+	r7:r6: `m96_rows`
+	r8: 8
+	r9: `FONT_TILE_WIDTH`
+
+scratch or locals:
+	r11:r10: scratch
+	r13:r12: scratch
+	r15:r14: scratch
+	r17:r16: scratch
+	r19:r18: code tile colors
+
+"globals":
+	r20: scanline counter
+	r21: tile Y index
+	r22: tile row counter (0-7)
+	r23: tile index (counter used to determine when we return from code tiles)
+	r24:
+	r25:

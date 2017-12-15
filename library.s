@@ -1,6 +1,6 @@
 ;;; C-Callable functions for mode 96
 
-#include "videoMode.def.h"
+#include "common.def.h"
 
 ;;; TODO: add all the usual Print functions, but that take color options
 	
