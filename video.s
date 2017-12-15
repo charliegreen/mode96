@@ -71,19 +71,26 @@ render_scanline:
 	;; decrement Y (last code tile will have loaded everything for its "next" tile)
 	;; sbiw	Y, 2
 
-	inc	r25		; increment row counter
-	sbrs	r25, 3		; if r25 has reached 8 (0b1000), skip
-	rjmp	1f
-	
-	clr	r25		; clear row counter
-	inc	r24		; increment tile Y index
-1:	
-
 	;; output a background pixel so that we can distinguish between uzem background and our background
 	out	VIDEO_PORT, r2
-
 	WAIT	r19, 51 - CENTER_ADJUSTMENT
-	WAIT	r19, 225
+
+	inc	r25		; increment row counter
+
+	;; -------------------- this is what the kids call the "end of tile row timing dance"
+	sbrs	r25, 3		; if r25 has reached 8 (0b1000), skip
+	rjmp 1f
+0:
+	clr	r25		; clear row counter
+	inc	r24		; increment tile Y index
+	rjmp	2f
+1:
+	nop
+	nop
+	nop
+2:
+	;; -------------------- sync up to 1820 cycles and continue
+	WAIT	r19, 0x9b
 	
 	;; if we've just drawn the last scanline, be done
 	dec	r10

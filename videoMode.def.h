@@ -16,7 +16,7 @@
 #define TILE_WIDTH 6
 
 // #define VRAM_TILES_H 40
-#define VRAM_TILES_H 36
+#define VRAM_TILES_H 32
 #ifndef VRAM_TILES_V
 #define VRAM_TILES_V 28
 #endif

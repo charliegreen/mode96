@@ -126,8 +126,8 @@ if __name__ == '__main__':
             unique_rows.add(row)
     unique_rows = sorted(unique_rows)
 
-    for rowi in range(len(unique_rows)):
-        print("{}:\t{}".format(rowi, unique_rows[rowi]))
+    # for rowi in range(len(unique_rows)):
+    #     print("{}:\t{}".format(rowi, unique_rows[rowi]))
     
     with open(OUTPUT, 'w') as f:
         f.write(HEADER.format(FILEPATH))

@@ -59,7 +59,7 @@ int main() {
     	for (u8 row = 0; row < 6; row++) {
     	    for (u8 col = 0; col < 16; col++) {
 		u8 rowoff = 1 + 6*(section & 3);
-		u8 coloff = 1 + 4*(section & 4);
+		u8 coloff = 0 + 4*(section & 4);
     		SetTileBoth(col+coloff, row+rowoff, col + 16*row, section);
     	    }
     	}
