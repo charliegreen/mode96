@@ -4,58 +4,45 @@
 
 	.global	begin_code_tile_row
 
-;;; ========================================
-;;; Expects:
-;;;   r25: tile row counter (0-7)
-;;;   r24: tile Y index
 begin_code_tile_row:
 	;; ---------------------------------------- initial register values
-	ldi	r16, FONT_TILE_WIDTH
-	mov	r5, r16
-	ldi	r16, SCREEN_TILES_H ; only go through this many tiles before returning
-	mov	r6, r16
-
-	;; pm converts from byte addresses to word addresses (divides by 2)
-	ldi	r22, lo8(pm(m96_rows))
-	ldi	r23, hi8(pm(m96_rows))
+	ldi	R_TILES_LEFT, SCREEN_TILES_H ; only go through this many tiles before returning
 
 	;; Set VRAM pointer to correct value (TODO optimize)
 	ldi	YL, lo8(vram)
 	ldi	YH, hi8(vram)
 	ldi	r16, SCREEN_TILES_H*3/2
-	mul	r24, r16
+	mul	R_TILE_Y, r16
 	add	YL, r0
 	adc	YH, r1
 	
 	ldi	XH, hi8(m96_palette)
 
 	;; ---------------------------------------- load first tile's colors
-	ld	r4, Y+
-	ld	r20, Y
-	swap	r20
-	andi	r20, 0x0F
+	ld	R_TXTI, Y+
+	ld	R_CLRI, Y
+	swap	R_CLRI
+	andi	R_CLRI, 0x0F
 
-	lsl	r20
+	lsl	R_CLRI
 	ldi	XL, lo8(m96_palette)
-	add	XL, r20
+	add	XL, R_CLRI
 
-	ld	r19, X+
-	ld	r18, X
+	ld	R_FG, X+
+	ld	R_BG, X
 
 	;; ---------------------------------------- load first tile's address and jump
-	ldi	ZL, lo8(m96_font)
-	ldi	ZH, hi8(m96_font)
-	add	ZL, r25		; tile row counter
-	ldi	r16, 8
-	mul	r4, r16
+	movw	ZL, R_FONTL
+	add	ZL, R_TILE_R
+	mul	R_TXTI, R_EIGHT
 	add	ZL, r0
 	adc	ZH, r1
-	ld	r4, Z		; lpm?
+	ld	R_TXTI, Z		; lpm?
 
-	mul	r4, r5
-	add	r0, r22
-	adc	r1, r23
+	mul	R_TXTI, R_ROW_WIDTH
+	add	r0, R_ROWSL
+	adc	r1, R_ROWSH
 	movw	r30, r0
 	
-	dec	r6
+	dec	R_TILES_LEFT
 	ijmp
