@@ -18,48 +18,63 @@ HEADER = """
 ;;; It is intended for usage with video mode 96.
 
 #include "../videoMode.def.h"
-
-	.section .data
-
-	.global m96_font
-m96_font:"""[1:]
-
-TILE_ROW_DATA = """
-	.byte	0b{3}{4}{5}{6}{7}{8}	;; TILE {0},{1} row {2}"""
+"""[1:]
 
 TILE_ROW_ASM = """
-	out	VIDEO_PORT, {3}
+	out	VIDEO_PORT, {0}
+	
+	;; ---------------------------------------- read VRAM
 	sbrs	r6, 0
 	rjmp	1f
+
+	;; color, then text
 	ld	r20, Y+
-	out	VIDEO_PORT, {4}
+	out	VIDEO_PORT, {1}
 	ld	r4, Y+
 	rjmp	2f
 1:
 	ld	r4, Y+
-	out	VIDEO_PORT, {4}
+	out	VIDEO_PORT, {1}
 	ld	r20, Y
 	swap	r20
 2:
-	out	VIDEO_PORT, {5}
+	out	VIDEO_PORT, {2}
 	andi	r20, 0x0F
 
+	;; ---------------------------------------- loading colors
 	lsl	r20
 
 	ldi	XL, lo8(m96_palette)
 	add	XL, r20
 
-	out	VIDEO_PORT, {6}
-	mul	r4, r5
+	out	VIDEO_PORT, {3}
 
+	;; ---------------------------------------- loading next tile
+	;; r4 is now an index into m96_font
+
+	ldi	ZL, lo8(m96_font)
+	ldi	ZH, hi8(m96_font)
+	add	ZL, r25		; tile row counter
+	ldi	r16, 8
+	mul	r4, r16
+	add	ZL, r0
+	adc	ZH, r1
+	ld	r4, Z
+
+	mul	r4, r5
 	add	r0, r22
-	out	VIDEO_PORT, {7}
+	out	VIDEO_PORT, {4}
 	adc	r1, r23
 	movw	r30, r0
-	dec	r6
-	out	VIDEO_PORT, {8}
+
+	dec	r6		; we can move this up here because out and ld don't modify SREG
+
+	out	VIDEO_PORT, {5}
+	
+	;; ---------------------------------------- load colors
 	ld	r19, X+
 	ld	r18, X
+	
 	breq	.+2
 	ijmp
 	ret
@@ -96,13 +111,48 @@ if __name__ == '__main__':
     PNG_W_PX, PNG_H_PX, pixels, metadata = load_png(FILEPATH)
     W, H = int(PNG_W_PX/TILE_W), int(PNG_H_PX/TILE_H) # width, height of our image, in tiles
 
+    tiles = []
+    for tile_row in range(H):
+        for tile_col in range(W):
+            irow, icol = tile_row*TILE_H, tile_col*TILE_W
+            tile = [foo[icol:icol+TILE_W] for foo in pixels[irow:irow+TILE_H]]
+            tile = [''.join('1' if x else '0' for x in row) for row in tile]
+            if tile not in tiles:
+                tiles.append(tile)
+
+    unique_rows = set()
+    for tile in tiles:
+        for row in tile:
+            unique_rows.add(row)
+    unique_rows = sorted(unique_rows)
+
+    for rowi in range(len(unique_rows)):
+        print("{}:\t{}".format(rowi, unique_rows[rowi]))
+    
     with open(OUTPUT, 'w') as f:
         f.write(HEADER.format(FILEPATH))
-        for tile_row in range(H):
-            for tile_col in range(W):
-                irow, icol = tile_row*TILE_H, tile_col*TILE_W
-                tile = [foo[icol:icol+TILE_W] for foo in pixels[irow:irow+TILE_H]]
 
-                for i in range(len(tile)):
-                    f.write(TILE_ROW_DATA.format(tile_row, tile_col, i,
-                                                 *['1' if x else '0' for x in tile[i]]))
+        # emit the tile table
+        f.write("\n\t.section .data\n")
+        f.write("\t.global m96_font\n")
+        f.write("\nm96_font:")
+        tileno = 0
+        for tile in tiles:
+            rowno = 0
+            f.write("\n\t;; TILE {}\n".format(tileno))
+            for row in tile:
+                f.write("\t.byte\t{}\t; {}\n".format(unique_rows.index(row), row))
+                rowno += 1
+            tileno += 1
+
+        # emit the actual code tiles
+        f.write("\n")
+        f.write("\t.section .text\n")
+        f.write("\t.global m96_rows\n")
+        f.write("m96_rows:")
+
+        for rowi in range(len(unique_rows)):
+            f.write("\n;;;---------------------------------------- tile row {}: {}\n".format(
+                rowi, unique_rows[rowi]))
+            f.write("_tilerow_{}:".format(rowi))
+            f.write(TILE_ROW_ASM.format(*['r18' if x == '1' else 'r19' for x in unique_rows[rowi]]))

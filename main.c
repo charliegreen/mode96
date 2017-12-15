@@ -21,6 +21,10 @@ ColorCombo m96_palette[16] = {
     { 0x02, 0x10 }, 		// red on green
     { 0x83, 0x36 },		// violet on yellow
     { 0xa8, 0x02 },		// cyan on red
+    { 0xe3, 0x42 },
+    { 0x2f, 0x23 },
+    { 0x55, 0x49 },
+    { 0x61, 0xd3 },
 };
 
 typedef struct {
@@ -51,13 +55,20 @@ int main() {
     // SetFontTilesIndex(0);
     ClearVram();
 
-    for (u8 section = 0; section < 2; section++) {
-    	for (u8 row = 0; row < 8; row++) {
+    for (u8 section = 0; section < 8; section++) {
+    	for (u8 row = 0; row < 6; row++) {
     	    for (u8 col = 0; col < 16; col++) {
-    		SetTileBoth(col, section+row, col + 16*row, (col+section) % 4);
+		u8 rowoff = 1 + 6*(section & 3);
+		u8 coloff = 1 + 4*(section & 4);
+    		SetTileBoth(col+coloff, row+rowoff, col + 16*row, section);
     	    }
-	}
+    	}
     }
+
+    SetTile(0, 0, '0'-32);
+    SetTile(SCREEN_TILES_H-2, 0, '1'-32);
+    SetTile(SCREEN_TILES_H-2, SCREEN_TILES_V-1, '2'-32);
+    SetTile(0, SCREEN_TILES_V-1, '3'-32);
     
     // u8 line = 0;    
     // Print(0, line++, PSTR("Done"));
