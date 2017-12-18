@@ -75,7 +75,7 @@ if __name__ == '__main__':
         f.write(HEADER.format(FILEPATH))
 
         # emit the tile table
-        f.write("\n\t.section .data\n")
+        f.write("\n\t.section .text\n")
         f.write("\t.global m96_font\n")
         f.write("\nm96_font:")
         tileno = 0

@@ -37,7 +37,7 @@ begin_code_tile_row:
 	mul	R_TXTI, R_EIGHT
 	add	ZL, r0
 	adc	ZH, r1
-	ld	R_TXTI, Z		; lpm?
+	lpm	R_TXTI, Z
 
 	mul	R_TXTI, R_ROW_WIDTH
 	add	r0, R_ROWSL

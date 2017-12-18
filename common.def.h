@@ -68,7 +68,7 @@ _tilerow_\n:
 	mul	R_TXTI, R_EIGHT
 	add	ZL, r0
 	adc	ZH, r1
-	ld	R_TXTI, Z
+	lpm	R_TXTI, Z
 
 	;; load next code tile word address into Z for ijmp
 	mul	R_TXTI, R_ROW_WIDTH
