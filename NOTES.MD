@@ -220,3 +220,37 @@ scratch or locals:
 	r23: tile index (counter used to determine when we return from code tiles)
 	r24:
 	r25:
+
+# colors
+
+TODO: come up with good color values simulating the 8 terminal ANSI colors:
+
+| num | color   | hex |
+|-----+---------+-----|
+|   0 | black   | 00  |
+|   1 | red     |     |
+|   2 | green   |     |
+|   3 | yellow  |     |
+|   4 | blue    |     |
+|   5 | magenta |     |
+|   6 | cyan    |     |
+|   7 | white   | ff  |
+
+	colors: B- G-- R--
+	grey:   01 010 010: 0x52
+	blue:   11 000 000: 0xc0
+	green:  00 010 000: 0x10
+	red:    00 000 010: 0x02
+	orange: 00 010 101: 0x15
+	yellow: 00 110 110: 0x36
+	cyan:   01 010 000: 0xa8
+	violet: 10 000 011: 0x83
+
+Some randomly created values from example 2:
+
+dark blue: 0xc2
+hot pink: 0xd7
+pastel pink: 0xa7
+light cyan: 0xfd
+light green: 0x39
+crimson: 0x05

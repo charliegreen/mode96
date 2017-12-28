@@ -2,8 +2,10 @@
 
 #include "common.def.h"
 
-;;; TODO: add all the usual Print functions, but that take color options
-	
+;;; TODO:
+;;;   * add all the usual Print functions, but that take color options
+;;;   * for SetTile/GetTile*, do bounds checking?
+
 	.global ClearVram
 	.global SetTile
 	.global GetTile
