@@ -10,6 +10,12 @@ BIN_DIR := ../../bin
 
 UZEM_RUN_OPTS := -f
 
+# This is a smart option that will determine what to do based on file type:
+#   - *.png: run the Python tile generator
+#   - *.s: use an assembly font file (eg, data/font.s)
+#   - (blank): don't do anything special for fonts
+FONT_FILE := $(DATA_DIR)/font.png
+
 AUX_TARGETS := $(GAME).hex # $(GAME).uze $(GAME).lss $(GAME).eep
 AUX_DEPS := Makefile $(wildcard $(DATA_DIR)/*)
 
@@ -27,15 +33,21 @@ FILES_H := $(shell find . -type f -iname '*.h')
 FILE_S_VMODE_ASM_SOURCE := video.s # the file included into uzeboxVideoEngineCore.s as VMODE_ASM_SOURCE
 FILES_S := library.s tiles.s	   # any other assembly files to be linked in
 
-FONT_PNG := font.png
-
-# --------------------------------
+# -------------------------------- option processing
 FILES_C := $(patsubst ./%,%,$(FILES_C))
 FILES_S := $(patsubst ./%,%,$(FILES_S))
 AUX_TARGETS := $(patsubst %,$(BUILD_DIR)/%,$(AUX_TARGETS))
 DEP_DIR := $(BUILD_DIR)/dep
 
-FONT_S := $(GEN_DIR)/$(patsubst %.png,%.s,$(FONT_PNG))
+ifeq ($(suffix $(FONT_FILE)),.png)
+FONT_PNG := $(FONT_FILE)
+FONT_S := $(GEN_DIR)/$(patsubst %.png,%.s,$(notdir $(FONT_PNG)))
+else ifeq ($(suffix $(FONT_FILE)),.s)
+FONT_S := $(FONT_FILE)
+else ifneq ($(FONT_FILE),)
+$(error Unrecognized font file type)
+endif
+
 FONT_O := $(subst /,_,$(FONT_S))
 FONT_O := $(patsubst %.s,%.o,$(FONT_O))
 
@@ -89,7 +101,7 @@ FILES_KERNEL := $(patsubst %,$(KERNEL)/%,$(FILES_KERNEL))
 OBJECTS := $(notdir $(FILES_KERNEL)) $(FILES_C) $(FILES_S)
 OBJECTS := $(patsubst %.c,%.o,$(OBJECTS))
 OBJECTS := $(patsubst %.s,%.o,$(OBJECTS))
-ifneq ($(FONT_PNG),)
+ifneq ($(FONT_FILE),)
 OBJECTS += $(FONT_O)
 endif
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(OBJECTS))
@@ -103,7 +115,7 @@ all: $(TARGET) $(AUX_TARGETS)
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 	mkdir $(DEP_DIR)
-	mkdir $(GEN_DIR)
+	mkdir -p $(GEN_DIR)
 
 # order-only prerequisite; OBJECTS don't depend on modification date anymore
 $(OBJECTS): $(AUX_DEPS) | $(BUILD_DIR)
@@ -140,25 +152,11 @@ $(BUILD_DIR)/$(FONT_O): $(FONT_S)
 $(BUILD_DIR)/uzeboxVideoEngineCore.o:	$(FILE_S_VMODE_ASM_SOURCE) $(FILES_H)
 
 ifneq ($(FONT_PNG),)
-$(FONT_S): $(DATA_DIR)/$(FONT_PNG)
+$(FONT_S): $(FONT_PNG)
 	python3 tile_generator.py $< $(GEN_DIR)
 endif
 
-# # TODO: figure out how to get just the C files that actually depend on the inc/h files to have rules
-# # depending on them
-# $(GEN_DIR): $(patsubst $(DATA_DIR)/%.png,$(GEN_DIR)/%.inc, \
-# 	$(shell find $(DATA_DIR) -type f -iname '*.png'))
 $(GEN_DIR): $(FONT_S)
-
-# # $(DATA_DIR)/%.png: $(DATA_DIR)/%.map.json
-# # $(GEN_DIR)/%.inc $(GEN_DIR)/%.h: $(DATA_DIR)/%.png # $(DATA_DIR)/%.map.json
-# #	$(BIN_DIR)/tile_converter.py $< $(GEN_DIR)
-# $(GEN_DIR)/%.inc: $(DATA_DIR)/%.png
-# 	gconvert $(DATA_DIR)/font.gconvert.xml
-# 	@echo "*** Gconvert finished ***"
-# # remove warning about only using video mode 9
-# 	@sed -ni '/^#if/,/^#endif/ d; p' $@
-# 	@echo
 
 # -------------------------------- final targets
 $(TARGET): $(OBJECTS)
