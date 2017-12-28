@@ -1,4 +1,9 @@
 # the goal
+
+NOTE: these are just notes to myself while designing things, often even train-of-thought ramblings,
+and definitely are NOT documentation or even necessarily vaguely up-to-date with the code. Please
+don't put any stock in them whatsoever.
+
 To make a COLOR 80x24 or 60x24 (at minimum, possibly taller) text display. By "color", I mean 16
 colors foreground/background (optimally), though allowances may have to be made reducing the number
 of colors.
@@ -164,7 +169,7 @@ Instead of having the one font table, we can do this:
 	m96_font_tiles:
 		;; code tile table here
 
-#### TEMPORARY
+# register allocation
 
 register usage:
 	everywhere:
