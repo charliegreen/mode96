@@ -74,6 +74,7 @@ int main() {
 
     for (u8 i = 0; i < SCREEN_TILES_H; i++) {
 	SetTileBoth(i, 1, '0'-32 + (i+1)%10, 1 + i/10);
+	SetTileBoth(i, 2, '0'-32 + i%10, i%8);
     }
     
     // u8 line = 0;    

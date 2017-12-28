@@ -41,8 +41,8 @@ _tilerow_\n:
 
 	;; color, then text
 	ld	R_CLRI, Y+
-	out	VIDEO_PORT, \p1
 	ld	R_TXTI, Y+
+	out	VIDEO_PORT, \p1
 	rjmp	2f
 1:
 	;; text, then color
@@ -51,7 +51,6 @@ _tilerow_\n:
 	ld	R_CLRI, Y
 	swap	R_CLRI
 2:
-	out	VIDEO_PORT, \p2
 	andi	R_CLRI, 0x0F
 
 	;; ---------------------------------------- loading colors
@@ -59,23 +58,26 @@ _tilerow_\n:
 
 	;; we only have 32 bytes of colors, so the index will never affect XH
 	ldi	XL, lo8(m96_palette) ; X is now base address of color palette
-	add	XL, R_CLRI
 
-	out	VIDEO_PORT, \p3
+	out	VIDEO_PORT, \p2
+
+	add	XL, R_CLRI
 
 	;; ---------------------------------------- loading next tile
 	;; *(R_FONT + 8*R_TXTI + R_TILE_R) == what code tile to jump to
 	movw	ZL, R_FONTL
 	add	ZL, R_TILE_R
 	mul	R_TXTI, R_EIGHT
+	out	VIDEO_PORT, \p3
 	add	ZL, r0
 	adc	ZH, r1
 	lpm	R_TXTI, Z
 
+	out	VIDEO_PORT, \p4
+
 	;; load next code tile word address into Z for ijmp
 	mul	R_TXTI, R_ROW_WIDTH
 	add	r0, R_ROWSL
-	out	VIDEO_PORT, \p4
 	adc	r1, R_ROWSH
 	movw	r30, r0
 
