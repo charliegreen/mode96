@@ -13,7 +13,7 @@
  * 3: scramble VRAM
  * 4: fake terminal output (TODO, NYI)
  */
-#define EXAMPLE 4
+#define EXAMPLE 0
 
 ColorCombo m96_palette[16] = {
 #if EXAMPLE >= 0 && EXAMPLE < 4
@@ -69,7 +69,7 @@ void button_update() {
     _btn.prev = _btn.down;
 }
 
-#if EXAMPLE < 4
+#if EXAMPLE > 0 && EXAMPLE < 4
 static void palette_randomize() {
     for (u8 i = 0; i < 16; i++) {
 	m96_palette[i].fg = GetPrngNumber(0);
@@ -115,7 +115,29 @@ int main() {
     SetTile(SCREEN_TILES_H-1, SCREEN_TILES_V-1, '2'-32);
     SetTile(0, SCREEN_TILES_V-1, '3'-32);
 
-    Print(4, 0, PSTR("foo bar baz"));
+    PrintColor(32, 2, PSTR("hurg nurg wurg"), 1);
+
+    u8 x = 10;
+    u8 line = 4;
+    PrintRamColor(x, line++, "foo bar baz", 1);
+    PrintBinaryByteColor(x, line++, 0x7f, 1);
+    PrintHexByteColor(x, line++, 0x7f, 1);
+    PrintHexIntColor(x, line++, 0x03f2, 1);
+    PrintHexLongColor(x, line++, 0xdeadbeef, 1);
+    PrintHexLongColor(x, line++, 0x0000beef, 1);
+
+    PrintLongColor(x, line++, 0xdeadbeef, 1);
+    PrintLongColor(x, line++, 0x00adbeef, 1);
+
+    PrintByteColor(x, line++, 0x7f, false, 1);
+    PrintByteColor(x, line++, 0x7f, true, 1);
+
+    PrintIntColor(x, line++, 5234, false, 1);
+    PrintIntColor(x, line++, 65234, false, 1);
+    PrintIntColor(x, line++, 5234, true, 1);
+    PrintIntColor(x, line++, 65234, true, 1);
+
+    PrintCharColor(x, line++, 'A', 1);
 
     while (true)
 	WaitVsync(1);

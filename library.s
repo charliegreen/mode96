@@ -3,7 +3,6 @@
 #include "common.def.h"
 
 ;;; TODO:
-;;;   * add all the usual Print functions, but that take color options
 ;;;   * for SetTile/GetTile*, do bounds checking?
 
 	.global ClearVram
@@ -12,8 +11,9 @@
 	.global SetTileColor
 	.global GetTileColor
 	.global SetTileBoth
-
 	.global SetFont
+	.global	FillColor
+
 	.global SetTileTable
 	.global InitializeVideoMode
 	.global DisplayLogo
@@ -38,6 +38,30 @@ ClearVram:
 	clr	r1
 
 	ret
+
+;;; ========================================
+;;; FillColor
+;;; r24: X pos (8-bit)
+;;; r22: Y pos (8-bit)
+;;; r20: number of cells to set the color of (8-bit)
+;;; r18: color palette index (4-bit)
+FillColor:
+	push	r16
+
+	mov	r16, r20
+	movw	r20, r18
+
+0:
+	rcall	SetTileColor
+	inc	r24
+	dec	r16
+	brne	0b
+
+	pop	r16
+	ret
+
+;;; ================================================================================
+;;; Tile getter and setter functions
 
 ;;; ========================================
 ;;; get_tile_addr_text

@@ -223,19 +223,6 @@ scratch or locals:
 
 # colors
 
-TODO: come up with good color values simulating the 8 terminal ANSI colors:
-
-| num | color   | hex |
-|-----+---------+-----|
-|   0 | black   | 00  |
-|   1 | red     |     |
-|   2 | green   |     |
-|   3 | yellow  |     |
-|   4 | blue    |     |
-|   5 | magenta |     |
-|   6 | cyan    |     |
-|   7 | white   | ff  |
-
 Looking at the ANSI VGA RGB values:
 
 	255 -> 7 for 3-bit, 3 for 2-bit
