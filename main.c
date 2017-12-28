@@ -58,7 +58,7 @@ int main() {
     for (u8 section = 0; section < 8; section++) {
     	for (u8 row = 0; row < 6; row++) {
     	    for (u8 col = 0; col < 16; col++) {
-		u8 rowoff = 2 + 6*(section & 3);
+		u8 rowoff = 3 + 6*(section & 3);
 		u8 coloff = 2 + 4*(section & 4);
     		SetTileBoth(col+coloff, row+rowoff, col + 16*row, section);
     	    }
@@ -66,11 +66,15 @@ int main() {
     }
 
     SetTile(0, 0, '0'-32);
-    SetTile(SCREEN_TILES_H-2, 0, '1'-32);
-    SetTile(SCREEN_TILES_H-2, SCREEN_TILES_V-1, '2'-32);
+    SetTile(SCREEN_TILES_H-1, 0, '1'-32);
+    SetTile(SCREEN_TILES_H-1, SCREEN_TILES_V-1, '2'-32);
     SetTile(0, SCREEN_TILES_V-1, '3'-32);
 
     Print(4, 0, PSTR("Whoop!!"));
+
+    for (u8 i = 0; i < SCREEN_TILES_H; i++) {
+	SetTileBoth(i, 1, '0'-32 + (i+1)%10, 1 + i/10);
+    }
     
     // u8 line = 0;    
     // Print(0, line++, PSTR("Done"));

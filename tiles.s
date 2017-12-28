@@ -43,6 +43,5 @@ begin_code_tile_row:
 	add	r0, R_ROWSL
 	adc	r1, R_ROWSH
 	movw	r30, r0
-	
-	dec	R_TILES_LEFT
+
 	ijmp

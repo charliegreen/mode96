@@ -84,8 +84,7 @@ render_scanline:
 	nop
 2:
 	;; -------------------- continue to next line or end of frame, synced to 1820 cycle boundary
-	;; each additional two extra tiles in SCREEN_TILES_H means removing 0x4e cycles from this wait
-	WAIT	r16, 0x34 ; 0x82 ;0xd0
+	WAIT	r16, 55
 	
 	;; if we've just drawn the last scanline, be done
 	dec	R_SCANLINE_COUNTER

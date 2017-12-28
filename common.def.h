@@ -17,6 +17,8 @@
 #define R_SCANLINE_COUNTER r20
 #define R_TILE_Y r21
 #define R_TILE_R r22
+
+;;; R_TILES_LEFT is number of tiles left to OUTPUT, not left to LOAD
 #define R_TILES_LEFT r23
 
 ;;; ---------------------------------------- just for use in code tiles
@@ -33,8 +35,8 @@ _tilerow_\n:
 
 	;; ---------------------------------------- reading VRAM
 	
-	;; if R_TILES_LEFT is even, we're on a [text][color] VRAM section
-	sbrs	R_TILES_LEFT, 0	; skip next instruction if even
+	;; if R_TILES_LEFT is *odd*, we're loading a [text][color] VRAM section next
+	sbrc	R_TILES_LEFT, 0	; skip next instruction if number of tiles left is even
 	rjmp	1f
 
 	;; color, then text
