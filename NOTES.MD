@@ -236,6 +236,35 @@ TODO: come up with good color values simulating the 8 terminal ANSI colors:
 |   6 | cyan    |     |
 |   7 | white   | ff  |
 
+Looking at the ANSI VGA RGB values:
+
+	255 -> 7 for 3-bit, 3 for 2-bit
+	170 -> 5 for 3-bit, 2 for 2-bit
+	85  -> 2 for 3-bit, 1 for 2-bit
+	0   -> 0 for 3-bit, 0 for 2-bit
+
+	low-intensity:
+	0:   0,   0,   0: 00 000 000: 00
+	1: 170,   0,   0: 00 000 101: 05
+	2:   0, 170,   0: 00 101 000: 28
+	3: 170,  85,   0: 00 010 101: 15
+	4:   0,   0, 170: 10 000 000: 80
+	5: 170,   0, 170: 10 000 101: 85
+	6:   0, 170, 170: 10 101 000: a8
+	7: 170, 170, 170: 10 101 101: ad
+
+	high-intensity:
+	0:  85,  85,  85: 01 010 010: 52
+	1: 255,  85,  85: 01 010 111: 57
+	2:  85, 255,  85: 01 111 010: 7a
+	3: 255, 255,  85: 01 111 111: 7f
+	4:  85,  85, 255: 11 010 010: d2
+	5: 255,  85, 255: 11 010 111: d7
+	6:  85, 255, 255: 11 111 010: fa
+	7: 255, 255, 255: 11 111 111: ff
+
+## older colors I had
+
 	colors: B- G-- R--
 	grey:   01 010 010: 0x52
 	blue:   11 000 000: 0xc0

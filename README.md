@@ -1,4 +1,5 @@
 # mode96
+
 A video driver for the Uzebox.
 
 This is a codetile-based 36x28 video mode that can support up to 256 different 1bpp tiles, where
@@ -17,4 +18,8 @@ ASCII tileset (96 tiles), displayed with 12 of 16 possible different palettes:
 
 Scrambled VRAM, showing characters with 16 different palettes:
 
-![example 3](https://imgur.com/MB2Hu8H.png)
+![example 3](https://imgur.com/HkS2Qxu.png)
+
+A simulation of basic VGA colors from ANSI escape codes:
+
+![example 4](https://imgur.com/ChugAQ6.png)

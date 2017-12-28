@@ -4,6 +4,8 @@
 #include <avr/pgmspace.h>
 #include <uzebox.h>
 
+#include <stdio.h>
+
 /* EXAMPLES
  * 0: just for miscellaneous debugging code
  * 1: show ASCII with 12 different palettes
@@ -11,9 +13,10 @@
  * 3: scramble VRAM
  * 4: fake terminal output (TODO, NYI)
  */
-#define EXAMPLE 1
+#define EXAMPLE 4
 
 ColorCombo m96_palette[16] = {
+#if EXAMPLE >= 0 && EXAMPLE < 4
     { 0xc0, 0x15 },		// blue on orange
     { 0x02, 0x10 }, 		// red on green
     { 0x83, 0x36 },		// violet on yellow
@@ -28,6 +31,27 @@ ColorCombo m96_palette[16] = {
     { 0xa7, 0xfd },
     { 0x39, 0x05 },
     { 0xff, 0x00 },
+
+#elif EXAMPLE == 4
+    // an imitation of ANSI color codes on a VGA display
+    { 0x00, 0x52 },		// low-intensity
+    { 0x05, 0x00 },
+    { 0x28, 0x00 },
+    { 0x15, 0x00 },
+    { 0x80, 0x00 },
+    { 0x85, 0x00 },
+    { 0xa8, 0x00 },
+    { 0xad, 0x00 },
+
+    { 0x52, 0x00 },		// high-intensity
+    { 0x57, 0x00 },
+    { 0x7a, 0x00 },
+    { 0x7f, 0x00 },
+    { 0xd2, 0x00 },
+    { 0xd7, 0x00 },
+    { 0xfa, 0x00 },
+    { 0xff, 0x00 },
+#endif
 };
 
 typedef struct {
@@ -45,12 +69,14 @@ void button_update() {
     _btn.prev = _btn.down;
 }
 
+#if EXAMPLE < 4
 static void palette_randomize() {
     for (u8 i = 0; i < 16; i++) {
 	m96_palette[i].fg = GetPrngNumber(0);
 	m96_palette[i].bg = GetPrngNumber(0);
     }
 }
+#endif
 
 #if EXAMPLE == 2
 static void palette_display() {
@@ -140,6 +166,37 @@ int main() {
 	    scramble_screen();
 	}
     }
+
+#elif EXAMPLE == 4
+    Print(8, 0, PSTR("ANSI VGA simulation"));
+    Print(0, 2, PSTR("normal"));
+    Print(18, 2, PSTR("bright"));
+
+    for (u8 i = 0; i < SCREEN_TILES_H; i++)
+	for (u8 j = 0; j < SCREEN_TILES_V; j++)
+	    SetTileColor(i, j, 7);
+
+    u8 x = 0;
+    u8 line = 3;
+    char buf[18];
+    for (u8 color = 0; color < 16; color++) {
+	snprintf_P(buf, sizeof(buf), PSTR("%2d: color %2d: %02X"),
+		   color + (color > 7 ? 82 : 30), color,
+		   m96_palette[color].fg);
+
+	PrintRam(x, line, (unsigned char*)buf);
+	for (u8 i = 0; i < sizeof(buf); i++)
+	    SetTileColor(x+i, line, color);
+
+	line++;
+	if (color == 7) {
+	    x = 18;
+	    line = 3;
+	}
+    }
+
+    while (true)
+	WaitVsync(1);
 
 #else
 #error Unknown example
