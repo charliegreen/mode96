@@ -29,6 +29,9 @@
 #define R_TXTI r10
 #define R_CLRI r25
 
+;;; TODO: we might be able to save cycles by jumping to a special bit of code for the last tile on
+;;; each scanline and doing extra work between the `out`s
+
 .macro TILE_ROW n,p0,p1,p2,p3,p4,p5
 _tilerow_\n:
 	out	VIDEO_PORT, \p0

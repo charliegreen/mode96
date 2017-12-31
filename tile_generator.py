@@ -5,8 +5,6 @@ import sys
 
 TILE_W, TILE_H = 6, 8
 
-# TODO: DON'T KEEP FONT IN RAM, USE LPM TO LOAD IT
-
 # Note: also, only '_' actually uses a pixel on the far left in any of its rows; we might be able to
 # cut down to 5-wide characters that always emit a background pixel on the far left
 
@@ -49,7 +47,7 @@ if __name__ == '__main__':
         FILENAME = FILEPATH
 
     OUTPUT = OUTPUT_DIR + FILENAME[0:-4] + ".s"
-        
+
     PNG_W_PX, PNG_H_PX, pixels, metadata = load_png(FILEPATH)
     W, H = int(PNG_W_PX/TILE_W), int(PNG_H_PX/TILE_H) # width, height of our image, in tiles
 
@@ -70,7 +68,7 @@ if __name__ == '__main__':
 
     # for rowi in range(len(unique_rows)):
     #     print("{}:\t{}".format(rowi, unique_rows[rowi]))
-    
+
     with open(OUTPUT, 'w') as f:
         f.write(HEADER.format(FILEPATH))
 

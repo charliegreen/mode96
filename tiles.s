@@ -1,5 +1,5 @@
 #include "common.def.h"
-	
+
 	.section .text
 
 	.global	begin_code_tile_row
@@ -15,7 +15,7 @@ begin_code_tile_row:
 	mul	R_TILE_Y, r16
 	add	YL, r0
 	adc	YH, r1
-	
+
 	ldi	XH, hi8(m96_palette)
 
 	;; ---------------------------------------- load first tile's colors

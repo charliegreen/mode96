@@ -5,7 +5,8 @@
 
 #define VMODE_FUNC sub_video_mode96
 
-#define HSYNC_USABLE_CYCLES 244
+// 258 is the maximum value of AUDIO_OUT_HSYNC_CYCLES, so less means cutting kernel functionality
+#define HSYNC_USABLE_CYCLES 258
 
 #define FONT_TILE_WIDTH  35	// size of a tile row in words
 #define TILE_HEIGHT 8

@@ -1,18 +1,17 @@
 ;;; ================================================================================
 ;;; Video Mode 96: text-only display with arbitrary color palettes
-;;; 
+;;;
 ;;; Type: 		tile-based
-;;; Cycles/Pixel:	?? TODO
 ;;; Tile Size:		6x8
-;;; Resolution:		?? TODO
-;;; 
+;;; Resolution:		(216x224) 36x28
+;;;
 ;;; Each scanline must total 1820 cycles. There are 524 scanlines total.
-	
+
 #include "common.def.h"
-	
+
 	.global vram		; just global for debugging
 	.global m96_palette
-	
+
 	.section .bss
 vram:		.space VRAM_SIZE
 
@@ -33,7 +32,7 @@ sub_video_mode96:
 	mov	R_FONTL, r16
 	ldi	r16, hi8(m96_font)
 	mov	R_FONTH, r16
-	
+
 	;; pm converts from byte addresses to word addresses (divides by 2)
 	ldi	r16, lo8(pm(m96_rows))
 	mov	R_ROWSL, r16
@@ -58,8 +57,8 @@ render_scanline:
 	;; `rcall` and `lds` both take 2 cycles, so should be 0x64
 	lds	r16, TCNT1L
 	lds	r17, TCNT1H
-	rcall	hsync_pulse	;156 cycles (154 inside hsync_pulse)
 
+	rcall	hsync_pulse	;156 cycles (154 inside hsync_pulse) with AUDIO_OUT_HSYNC_CYCLES=135
 	WAIT	r16, HSYNC_USABLE_CYCLES - AUDIO_OUT_HSYNC_CYCLES
 
 	;; do our code tile setup
@@ -84,12 +83,12 @@ render_scanline:
 	nop
 2:
 	;; -------------------- continue to next line or end of frame, synced to 1820 cycle boundary
-	WAIT	r16, 55
-	
+	WAIT	r16, 41
+
 	;; if we've just drawn the last scanline, be done
 	dec	R_SCANLINE_COUNTER
 	breq	frame_end
-	
+
 	rjmp	render_scanline
 
 frame_end:
@@ -109,5 +108,5 @@ frame_end:
 	;; clear any pending timer int
 	ldi ZL,(1<<OCF1A)
 	sts _SFR_MEM_ADDR(TIFR1),ZL
-	
+
 	ret			; returning from call to sub_video_mode96
